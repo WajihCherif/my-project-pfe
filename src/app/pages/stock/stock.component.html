@@ -1,1 +1,149 @@
-<p>stock works!</p>
+<div class="container-fluid">
+  <div class="pg-title mb-3">
+    <span class="icon">📦</span> Stock
+  </div>
+
+  <div class="search mb-3">
+    <span style="color:var(--text-3)">🔍</span>
+    <input type="text" class="form-control" placeholder="Rechercher produit..." [(ngModel)]="search">
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-md-4">
+      <div class="card text-center" style="background:var(--green-bg);border:1px solid var(--green-border);box-shadow:var(--shadow)">
+        <div class="card-body">
+          <div class="text-uppercase fw-bold text-success small mb-2" style="letter-spacing:.5px">Produits Étagère</div>
+          <div class="display-4 fw-bold text-success font-monospace">23</div>
+          <div class="text-muted small">Détectés par YOLO</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center" style="background:var(--blue-bg);border:1px solid rgba(37,99,235,0.2);box-shadow:var(--shadow)">
+        <div class="card-body">
+          <div class="text-uppercase fw-bold text-primary small mb-2" style="letter-spacing:.5px">Produits Dépôt</div>
+          <div class="display-4 fw-bold text-primary font-monospace">24</div>
+          <div class="text-muted small">Inventaire total</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center" style="background:var(--red-bg);border:1px solid rgba(214,59,59,0.2);box-shadow:var(--shadow)">
+        <div class="card-body">
+          <div class="text-uppercase fw-bold text-danger small mb-2" style="letter-spacing:.5px">Différence</div>
+          <div class="display-4 fw-bold text-danger font-monospace">-1</div>
+          <div class="text-muted small">Produit(s) manquant(s)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stock-tabs mb-3">
+    <button class="btn btn-outline-primary me-2" *ngFor="let t of tabs" [class.active]="activeTab===t.id" (click)="activeTab=t.id">{{ t.label }}</button>
+  </div>
+
+  <!-- Étagère -->
+  <div *ngIf="activeTab==='etagere'" class="card">
+    <div class="card-header">
+      <span class="card-title">🏪 Produits sur l'Étagère</span>
+      <span class="badge bg-success ms-2">● YOLO temps réel</span>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Produit</th>
+              <th>État</th>
+              <th>Qté</th>
+              <th>Conf.</th>
+              <th>Détection</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of filteredEtagere">
+              <td class="text-muted small">{{ p.num }}</td>
+              <td>{{ p.name }}</td>
+              <td><span class="badge" [ngClass]="p.cls"><span class="ch-dot"></span>{{ p.status }}</span></td>
+              <td class="font-monospace fw-bold" [style.color]="p.qtyColor">{{ p.qty }}</td>
+              <td class="font-monospace small" [style.color]="p.confColor">{{ p.conf }}</td>
+              <td class="text-muted small">{{ p.time }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dépôt -->
+  <div *ngIf="activeTab==='depot'" class="card">
+    <div class="card-header">
+      <span class="card-title">📦 Produits en Dépôt</span>
+      <span class="badge bg-primary ms-2">Inventaire initial</span>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Produit</th>
+              <th>Qté Dépôt</th>
+              <th>Qté Étagère</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of filteredDepot">
+              <td class="text-muted small">{{ p.num }}</td>
+              <td>{{ p.name }}</td>
+              <td class="font-monospace fw-bold text-primary">{{ p.qtyD }}</td>
+              <td class="font-monospace" [style.color]="p.qtyEColor">{{ p.qtyE }}</td>
+              <td><span class="badge" [ngClass]="p.cls"><span class="ch-dot"></span>{{ p.status }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Différence -->
+  <div *ngIf="activeTab==='diff'" class="card">
+    <div class="card-header">
+      <span class="card-title">⚠️ Différence Dépôt / Étagère</span>
+      <span class="badge bg-danger ms-2">Produits avec écart</span>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Produit</th>
+              <th>Qté Dépôt</th>
+              <th>Qté Étagère</th>
+              <th>Écart</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Boîte de conserve Heinz 400g</td>
+              <td class="font-monospace fw-bold">10</td>
+              <td class="font-monospace text-warning">—</td>
+              <td class="font-monospace fw-bold text-warning">Temp.</td>
+              <td><span class="badge bg-warning text-dark">⚠️ Temporairement enlevé</span></td>
+            </tr>
+            <tr>
+              <td>Snack sucré Kinder Bueno</td>
+              <td class="font-monospace fw-bold">22</td>
+              <td class="font-monospace text-danger">0</td>
+              <td class="font-monospace fw-bold text-danger">-22</td>
+              <td><span class="badge bg-danger">🔴 Retiré Confirmé</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

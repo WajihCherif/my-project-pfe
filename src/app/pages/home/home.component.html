@@ -1,1 +1,151 @@
-<p>home works!</p>
+<div class="container-fluid py-4">
+  <div class="d-flex align-items-center mb-4">
+    <div class="fs-4 fw-bold me-3">🏠 Home — Vue d'ensemble</div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="input-group">
+        <span class="input-group-text">🔍</span>
+        <input type="text" class="form-control" placeholder="Rechercher produit...">
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-auto">
+      <span class="badge bg-secondary fs-6">Total produits : <strong>24</strong></span>
+    </div>
+    <div class="col-auto">
+      <span class="badge bg-danger fs-6">Problèmes : <strong>3</strong></span>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex gap-3">
+        <button class="btn btn-success flex-fill" (click)="router.navigate(['/stock'])">
+          📦 Total produits : 24 <span>›</span>
+        </button>
+        <button class="btn btn-danger flex-fill" (click)="router.navigate(['/alerts'])">
+          ⚠️ Problèmes : 3 <span>›</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <div class="card text-center border-success">
+            <div class="card-body">
+              <div class="text-success fw-bold">ON SHELF</div>
+              <div class="fs-2 fw-bold text-success">21</div>
+              <div class="text-muted small">Produits détectés</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center border-warning">
+            <div class="card-body">
+              <div class="text-warning fw-bold">TEMP REMOVED</div>
+              <div class="fs-2 fw-bold text-warning">1</div>
+              <div class="text-muted small">En cours de vérif.</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center border-danger">
+            <div class="card-body">
+              <div class="text-danger fw-bold">REMOVED</div>
+              <div class="fs-2 fw-bold text-danger">1</div>
+              <div class="text-muted small">Confirmé manquant</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center border-primary">
+            <div class="card-body">
+              <div class="text-primary fw-bold">TOTAL DÉPÔT</div>
+              <div class="fs-2 fw-bold text-primary">24</div>
+              <div class="text-muted small">Inventaire initial</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Liste des Produits</h5>
+          <button class="btn btn-sm btn-outline-secondary">···</button>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Produit</th>
+                  <th>État</th>
+                  <th>Quantité</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of products">
+                  <td>{{ p.name }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="p.cls === 'on' ? 'bg-success' : p.cls === 'tmp' ? 'bg-warning' : 'bg-danger'">
+                      {{ p.status }}
+                    </span>
+                  </td>
+                  <td>{{ p.qty }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Produits avec Problème</h5>
+          <button class="btn btn-sm btn-outline-secondary">···</button>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Produit</th>
+                  <th>Problème</th>
+                  <th>Depuis</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of problems">
+                  <td>
+                    <div class="fw-bold">{{ p.name }}</div>
+                    <div class="text-muted small" *ngIf="p.since">Depuis: {{ p.since }}</div>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="p.cls === 'tmp' ? 'bg-warning' : p.cls === 'conf' ? 'bg-danger' : 'bg-secondary'">
+                      {{ p.label }}
+                    </span>
+                  </td>
+                  <td class="text-muted font-monospace small">{{ p.duration }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

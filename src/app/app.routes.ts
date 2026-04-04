@@ -5,16 +5,22 @@ import { StockComponent } from './pages/stock/stock.component';
 import { EtatComponent } from './pages/etat/etat.component';
 import { AlertsComponent } from './pages/alerts/alerts.component';
 import { AccountComponent } from './pages/account/account.component';
+import { LoginComponent } from './pages/login/login.component';
+import { SignupComponent } from './pages/signup/signup.component';
+import { AuthGuard } from './guards/auth.guard';
+import { LoginGuard } from './guards/auth.guard';
 import { NgModule } from '@angular/core';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'home', pathMatch: 'full' },
-  { path: 'home', component: HomeComponent },
-  { path: 'live-camera', component: LiveCameraComponent },
-  { path: 'stock', component: StockComponent },
-  { path: 'etat', component: EtatComponent },
-  { path: 'alerts', component: AlertsComponent },
-  { path: 'account', component: AccountComponent },
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: 'login', component: LoginComponent, canActivate: [LoginGuard] },
+  { path: 'signup', component: SignupComponent, canActivate: [LoginGuard] },
+  { path: 'home', component: HomeComponent, canActivate: [AuthGuard] },
+  { path: 'live-camera', component: LiveCameraComponent, canActivate: [AuthGuard] },
+  { path: 'stock', component: StockComponent, canActivate: [AuthGuard] },
+  { path: 'etat', component: EtatComponent, canActivate: [AuthGuard] },
+  { path: 'alerts', component: AlertsComponent, canActivate: [AuthGuard] },
+  { path: 'account', component: AccountComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: 'home' }
 ];
 

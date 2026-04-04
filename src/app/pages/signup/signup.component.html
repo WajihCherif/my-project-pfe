@@ -1,0 +1,49 @@
+<div class="auth-page d-flex align-items-center justify-content-center min-vh-100 py-5">
+  <div class="card auth-card shadow-sm border-0">
+    <div class="card-body p-5">
+      <h1 class="h3 mb-3 fw-bold text-center">Inscription</h1>
+      <p class="text-muted text-center mb-4">Créez un compte pour accéder au tableau de bord.</p>
+
+      <form (ngSubmit)="onSubmit()" class="needs-validation" novalidate>
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label">Nom</label>
+            <input type="text" class="form-control" [(ngModel)]="nom" name="nom" required />
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Prénom</label>
+            <input type="text" class="form-control" [(ngModel)]="prenom" name="prenom" required />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" [(ngModel)]="email" name="email" required />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Rôle</label>
+          <select class="form-select" [(ngModel)]="role" name="role" required>
+            <option value="user">Utilisateur</option>
+            <option value="admin">Administrateur</option>
+          </select>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">Mot de passe</label>
+          <input type="password" class="form-control" [(ngModel)]="mot_de_passe" name="mot_de_passe" required />
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mb-3" [disabled]="loading">
+          {{ loading ? 'Création en cours...' : 'Créer un compte' }}
+        </button>
+
+        <div *ngIf="error" class="alert alert-danger py-2 mb-3">{{ error }}</div>
+
+        <div class="text-center text-muted">
+          Déjà inscrit ? <a routerLink="/login">Se connecter</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -8,18 +8,24 @@ import { HeaderComponent } from './layout/header/header.component';
   standalone: true,
   imports: [RouterOutlet, SidebarComponent, HeaderComponent],
   template: `
-    <div class="app-layout">
-      <app-sidebar></app-sidebar>
-      <div class="main">
-        <app-header></app-header>
-        <div class="pages">
-          <router-outlet></router-outlet>
+    <div class="app-layout container-fluid p-0">
+      <div class="row g-0 min-vh-100">
+        <div class="col-auto">
+          <app-sidebar></app-sidebar>
+        </div>
+        <div class="col d-flex flex-column">
+          <app-header></app-header>
+          <main class="flex-grow-1 overflow-auto py-4 px-4 bg-light">
+            <div class="container-fluid px-0">
+              <router-outlet></router-outlet>
+            </div>
+          </main>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .app-layout { display: flex; height: 100vh; overflow: hidden; }
+    .app-layout { min-height: 100vh; }
     .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
     .pages { flex: 1; overflow-y: auto; padding: 20px 22px; }
     .pages::-webkit-scrollbar { width: 4px; }

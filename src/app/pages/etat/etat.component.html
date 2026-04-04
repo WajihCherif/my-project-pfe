@@ -1,1 +1,104 @@
-<p>etat works!</p>
+<div class="container-fluid">
+  <div class="pg-title mb-3">
+    <span class="icon">⏳</span> État du Stock
+  </div>
+
+  <div class="etat-current card mb-3">
+    <div class="card-body">
+      <div class="etat-label mb-3">État Actuel du Système</div>
+      <div class="etat-row">
+        <div class="etat-state">
+          <div>
+            <div class="etat-label mb-2">Étagère principale</div>
+            <div class="state-chip mb-2">
+              <div class="dot"></div> ON_SHELF
+            </div>
+            <div class="state-timer">Stable depuis {{ timer }}s</div>
+          </div>
+        </div>
+        <div class="text-center px-3">
+          <div class="display-6 font-monospace fw-bold">{{ clock }}</div>
+          <div class="text-muted small mt-1">Mise à jour en temps réel</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="etat-stats row g-3 mb-3">
+    <div class="col-md-3">
+      <div class="es gr">
+        <div class="es-val">21</div>
+        <div class="es-lbl">ON_SHELF</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="es am">
+        <div class="es-val">1</div>
+        <div class="es-lbl">TEMP_REMOVED</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="es rd">
+        <div class="es-val">1</div>
+        <div class="es-lbl">REMOVED</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="es bl">
+        <div class="es-val">98%</div>
+        <div class="es-lbl">Précision YOLO</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="card-title">📋 État par Produit</span>
+          <button class="btn btn-sm btn-outline-secondary">···</button>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Produit</th>
+                  <th>État</th>
+                  <th>Timer</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of products">
+                  <td>{{ p.name }}</td>
+                  <td>
+                    <span class="status-pill" [ngClass]="'sp-'+p.cls">
+                      <span class="sp-dot"></span>{{ p.state }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="timer-badge" [ngClass]="p.timerCls">{{ p.timer }}</span>
+                    <div class="timer-progress" *ngIf="p.progress !== null">
+                      <div class="timer-progress-bar" [ngClass]="p.cls" [style.width]="p.progress+'%'"></div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="timeline">
+        <div class="fw-bold text-dark mb-3 fs-7">📅 Timeline</div>
+        <div class="tl-item" *ngFor="let ev of timeline">
+          <div class="tl-dot" [style.background]="ev.color"></div>
+          <div class="tl-time">{{ ev.time }}</div>
+          <div class="tl-msg">{{ ev.msg }}<small class="d-block text-muted">{{ ev.sub }}</small></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

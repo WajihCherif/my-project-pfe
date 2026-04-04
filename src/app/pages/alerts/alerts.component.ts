@@ -5,32 +5,8 @@ import { CommonModule } from '@angular/common';
   selector: 'app-alerts',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="pg-title"><span class="icon">🔔</span> Alertes</div>
-
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div style="display:flex;align-items:center;gap:10px">
-        <span style="font-weight:700;font-size:15px">Alertes Actives</span>
-        <span style="background:var(--amber);color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px">{{ alerts.length }} alertes</span>
-      </div>
-      <div style="display:flex;gap:8px">
-        <select class="flt"><option>Toutes</option><option>Critiques</option><option>Warnings</option></select>
-        <select class="flt"><option>Aujourd'hui</option><option>Cette semaine</option></select>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="alert-row" *ngFor="let al of alerts">
-        <div class="al-icon" [class.red]="al.critical">{{ al.icon }}</div>
-        <div class="al-sep"></div>
-        <div class="al-msg">
-          <strong>{{ al.title }}</strong>
-          <small>{{ al.sub }}</small>
-        </div>
-        <div class="al-time">{{ al.time }}</div>
-      </div>
-    </div>
-  `
+  templateUrl: './alerts.component.html',
+  styleUrls: ['./alerts.component.css']
 })
 export class AlertsComponent {
   alerts = [

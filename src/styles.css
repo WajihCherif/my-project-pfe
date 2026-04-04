@@ -1,1 +1,27 @@
-/* You can add global styles to this file, and also import other style files */
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: #f4f7fb;
+  color: #1f2937;
+}
+
+button, input, select, textarea {
+  font: inherit;
+}
+
+html, body, app-root {
+  min-height: 100%;
+}
+
+:root {
+  color-scheme: light;
+  --bs-body-bg: #f4f7fb;
+}
+
+body {
+  background-color: var(--bs-body-bg);
+}
+

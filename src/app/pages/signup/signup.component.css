@@ -1,0 +1,5 @@
+.auth-page { background: #f4f7fb; }
+.auth-card { width: 100%; max-width: 520px; }
+.auth-card .form-control,
+.auth-card .form-select { min-height: 45px; }
+.auth-card .btn-primary { min-height: 45px; }

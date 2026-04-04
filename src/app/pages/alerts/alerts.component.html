@@ -1,1 +1,37 @@
-<p>alerts works!</p>
+<div class="container-fluid">
+  <div class="pg-title mb-3">
+    <span class="icon">🔔</span> Alertes
+  </div>
+
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div class="d-flex align-items-center gap-3">
+      <span class="fw-bold fs-6">Alertes Actives</span>
+      <span class="badge bg-warning text-dark">{{ alerts.length }} alertes</span>
+    </div>
+    <div class="d-flex gap-2">
+      <select class="form-select">
+        <option>Toutes</option>
+        <option>Critiques</option>
+        <option>Warnings</option>
+      </select>
+      <select class="form-select">
+        <option>Aujourd'hui</option>
+        <option>Cette semaine</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body p-0">
+      <div class="alert-row" *ngFor="let al of alerts">
+        <div class="al-icon" [class.red]="al.critical">{{ al.icon }}</div>
+        <div class="al-sep"></div>
+        <div class="al-msg">
+          <strong>{{ al.title }}</strong>
+          <small class="text-muted d-block">{{ al.sub }}</small>
+        </div>
+        <div class="al-time text-muted">{{ al.time }}</div>
+      </div>
+    </div>
+  </div>
+</div>

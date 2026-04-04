@@ -1,1 +1,93 @@
-<p>account works!</p>
+<div class="account-page py-5">
+  <div *ngIf="!currentUser" class="d-flex justify-content-center">
+    <div class="card shadow-sm border-0 p-4 text-center" style="max-width: 520px;">
+      <h2 class="h5 mb-3">Aucun compte trouvé</h2>
+      <p class="text-muted mb-4">Veuillez vous reconnecter pour afficher votre profil.</p>
+      <button class="btn btn-primary" (click)="router.navigate(['/login'])">Aller à la connexion</button>
+    </div>
+  </div>
+
+  <div *ngIf="currentUser" class="container-lg">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
+      <div>
+        <h1 class="h3 mb-1">Mon compte</h1>
+        <p class="text-muted mb-0">Gérez vos informations personnelles et supprimez votre profil.</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" (click)="resetForm()">Réinitialiser</button>
+        <button class="btn btn-primary" [disabled]="loading" (click)="saveChanges()">Enregistrer</button>
+      </div>
+    </div>
+
+    <div class="card account-card shadow-sm border-0 mb-4">
+      <div class="card-body p-4">
+        <div class="d-flex flex-column flex-lg-row gap-4">
+          <div class="profile-summary text-center text-lg-start">
+            <div class="avatar mb-3">👤</div>
+            <div class="fs-5 fw-bold">{{ currentUser.nom }} {{ currentUser.prenom }}</div>
+            <div class="badge bg-primary-subtle text-primary mt-2">{{ currentUser.role }}</div>
+          </div>
+          <div class="flex-fill">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Nom</label>
+                <input class="form-control" [(ngModel)]="nom" name="nom" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Prénom</label>
+                <input class="form-control" [(ngModel)]="prenom" name="prenom" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input class="form-control" type="email" [(ngModel)]="email" name="email" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Rôle</label>
+                <input class="form-control" [(ngModel)]="role" name="role" readonly />
+              </div>
+              <div class="col-12">
+                <label class="form-label">Mot de passe (optionnel)</label>
+                <input class="form-control" type="password" [(ngModel)]="mot_de_passe" name="mot_de_passe" />
+              </div>
+            </div>
+
+            <div class="mt-4 d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3">
+              <div>
+                <div *ngIf="success" class="alert alert-success py-2 mb-0">{{ success }}</div>
+                <div *ngIf="error" class="alert alert-danger py-2 mb-0">{{ error }}</div>
+              </div>
+              <button class="btn btn-danger" [disabled]="deleting" (click)="deleteAccount()">Supprimer mon compte</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="h6 mb-0">Historique de connexion</h2>
+          <button class="btn btn-sm btn-outline-secondary">···</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>IP</th>
+                <th>Résultat</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let log of loginHistory">
+                <td>{{ log.date }}</td>
+                <td class="mono-cell">{{ log.ip }}</td>
+                <td><span class="badge bg-success">Succès</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

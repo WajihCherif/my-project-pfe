@@ -1,0 +1,66 @@
+.pg-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin-bottom: 16px;
+}
+
+.pg-title .icon {
+  margin-right: 8px;
+}
+
+.alert-row {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-light);
+  transition: background-color 0.2s ease;
+}
+
+.alert-row:hover {
+  background-color: var(--bg-2);
+}
+
+.alert-row:last-child {
+  border-bottom: none;
+}
+
+.al-icon {
+  font-size: 20px;
+  width: 32px;
+  text-align: center;
+  margin-right: 12px;
+}
+
+.al-icon.red {
+  color: var(--red);
+}
+
+.al-sep {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  margin-right: 12px;
+}
+
+.al-msg {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.al-msg strong {
+  display: block;
+  color: var(--text-1);
+  margin-bottom: 2px;
+}
+
+.al-msg small {
+  color: var(--text-3);
+}
+
+.al-time {
+  font-size: 12px;
+  color: var(--text-3);
+  font-weight: 500;
+}

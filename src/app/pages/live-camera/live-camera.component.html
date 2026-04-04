@@ -1,1 +1,134 @@
-<p>live-camera works!</p>
+<div class="container-fluid">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div class="pg-title mb-0">
+      <span class="icon">📷</span> Live Camera
+    </div>
+    <button class="btn btn-outline-primary" [class.active]="showAll" (click)="showAll = !showAll">
+      {{ showAll ? '← Vue Unique' : '📷 Show All Cameras' }}
+    </button>
+  </div>
+
+  <div class="cam-selector-bar mb-3">
+    <span class="text-muted fw-bold small">Sélectionnez la caméra :</span>
+    <div class="cam-tabs">
+      <button class="btn btn-sm btn-outline-secondary me-2" *ngFor="let c of camKeys"
+        [class.active]="activeCam === c" (click)="activeCam = c; showAll = false">
+        {{ labels[c] }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Vue unique -->
+  <div *ngIf="!showAll">
+    <div class="cam-layout row g-3">
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="card-title">
+              📷 {{ data[activeCam].title }}
+              <span class="badge bg-danger ms-2">● LIVE</span>
+            </span>
+            <button class="btn btn-sm btn-outline-secondary">···</button>
+          </div>
+          <div class="card-body">
+            <div class="cam-view position-relative">
+              <div class="shelf-sim">
+                <div class="shelf-row d-flex gap-1 mb-1">
+                  <div class="si det" style="background:#3b82f6;width:26px;height:20px"><span class="bb">0.94</span></div>
+                  <div class="si" style="background:#2563eb;width:26px;height:20px"></div>
+                  <div class="si det" style="background:#3b82f6;width:26px;height:20px"></div>
+                  <div class="si det" style="background:#60a5fa;width:26px;height:20px"></div>
+                  <div class="si det" style="background:#2563eb;width:26px;height:20px"></div>
+                </div>
+                <div class="shelf-row d-flex gap-1 mb-1">
+                  <div class="si" style="background:#ef4444;width:26px;height:24px"></div>
+                  <div class="si det" style="background:#22c55e;width:26px;height:24px"><span class="bb">0.87</span></div>
+                  <div class="si det" style="background:#f97316;width:26px;height:24px"></div>
+                  <div class="si det" style="background:#22c55e;width:26px;height:24px"></div>
+                  <div class="si det" style="background:#f97316;width:26px;height:24px"></div>
+                </div>
+                <div class="shelf-row d-flex gap-1">
+                  <div class="si" style="background:#92400e;width:34px;height:28px"></div>
+                  <div class="si" style="background:#78350f;width:34px;height:28px"></div>
+                  <div class="si" style="background:#92400e;width:34px;height:28px"></div>
+                  <div class="si" style="background:#78350f;width:34px;height:28px"></div>
+                </div>
+              </div>
+              <div class="rec-badge">REC ●</div>
+            </div>
+            <div class="cam-footer d-flex justify-content-between align-items-center">
+              <div class="det-count">Produits détectés : <strong>{{ data[activeCam].count }}</strong></div>
+              <span class="badge bg-success">Stable</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="cam-info">
+          <div class="info-box card mb-3">
+            <div class="card-body">
+              <div class="info-box-title mb-2">Infos temps réel</div>
+              <div class="info-val gr display-6 fw-bold text-success">{{ data[activeCam].count }}</div>
+              <div class="conf-avg small">Confiance Moyenne: <span class="fw-bold">{{ data[activeCam].conf }}</span></div>
+            </div>
+          </div>
+          <div class="info-box card mb-3">
+            <div class="card-body">
+              <div class="info-box-title mb-2">État Actuel</div>
+              <div class="etat-box">
+                <div class="etat-chip mb-1">
+                  <div class="dot"></div> ON_SHELF
+                </div>
+                <div class="etat-timer small text-muted">0/10s</div>
+              </div>
+            </div>
+          </div>
+          <div class="info-box card">
+            <div class="card-body">
+              <div class="info-box-title mb-2">Source</div>
+              <div class="small text-muted lh-base">
+                <div>🎥 <strong>Webcam</strong> — Flux en direct</div>
+                <div>🤖 <strong>YOLO</strong> — Détection objets</div>
+                <div class="mt-2 p-2 bg-success bg-opacity-10 border border-success border-opacity-25 rounded small text-success fw-bold">
+                  Zone étagère analysée par YOLO avec bounding boxes
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vue toutes les caméras -->
+  <div *ngIf="showAll">
+    <div class="all-cams-grid row g-3">
+      <div class="col-md-6 col-lg-3" *ngFor="let c of camKeys">
+        <div class="mini-cam-card card" [class.active-cam]="activeCam === c"
+          (click)="activeCam = c; showAll = false">
+          <div class="mini-cam-view card-body p-2" [style.background]="miniCamBg[c]">
+            <div class="d-flex flex-column gap-1 align-items-center justify-content-center h-100">
+              <div class="d-flex gap-1">
+                <div *ngFor="let b of miniBlocks[c]"
+                  [style.background]="b.bg" [style.width]="b.w+'px'" [style.height]="b.h+'px'"
+                  class="rounded" [style.border]="b.border || 'none'">
+                </div>
+              </div>
+            </div>
+            <div class="mini-rec" [style.color]="c === 'sortie' ? '#f87171' : '#4ade80'">REC ●</div>
+          </div>
+          <div class="mini-cam-info card-footer bg-transparent">
+            <div class="mini-cam-name fw-bold">{{ labels[c] }}</div>
+            <div class="mini-cam-stats">
+              <span class="badge" [ngClass]="miniChip[c].cls" style="font-size:9px;padding:1px 6px">{{ miniChip[c].label }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mt-3 p-2 bg-light border rounded small text-muted">
+      💡 Cliquez sur une caméra pour l'afficher en plein écran
+    </div>
+  </div>
+</div>
