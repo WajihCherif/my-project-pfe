@@ -3,6 +3,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -14,7 +15,10 @@ import { filter } from 'rxjs/operators';
 export class SidebarComponent implements OnInit {
   isAuthPage = false;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
     // Check initial route
@@ -33,7 +37,7 @@ export class SidebarComponent implements OnInit {
   }
 
   logout() {
-    localStorage.removeItem('token');
+    this.authService.clearCurrentUser();
     this.router.navigate(['/login']);
   }
 }
