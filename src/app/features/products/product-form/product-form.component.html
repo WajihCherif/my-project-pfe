@@ -1,0 +1,63 @@
+<div class="container-fluid" style="max-width: 800px; margin: 0 auto;">
+  <div *ngIf="toastMessage" class="toast align-items-center show position-fixed top-0 end-0 m-3 text-white bg-{{ toastType }} border-0 shadow-lg" role="alert" style="z-index: 1055;">
+    <div class="d-flex">
+      <div class="toast-body fw-medium">{{ toastMessage }}</div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold m-0">{{ productId ? 'Edit Product' : 'Add New Product' }}</h2>
+    <a routerLink="/products" class="btn btn-light shadow-sm fw-medium">Back to List</a>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-4">
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+      </div>
+      
+      <form *ngIf="!loading" [formGroup]="productForm" (ngSubmit)="onSubmit()">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-medium">Product Code</label>
+            <input type="text" class="form-control" formControlName="product_code">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-medium">Product Name</label>
+            <input type="text" class="form-control" formControlName="name">
+          </div>
+          
+          <div class="col-md-12">
+            <label class="form-label fw-medium">Description</label>
+            <textarea class="form-control" formControlName="description" rows="2"></textarea>
+          </div>
+
+          <div class="col-md-6">
+             <label class="form-label fw-medium">Category</label>
+             <input type="text" class="form-control" formControlName="category">
+          </div>
+          <div class="col-md-6">
+             <label class="form-label fw-medium">Barcode</label>
+             <input type="text" class="form-control" formControlName="barcode">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-medium">Price</label>
+            <input type="number" class="form-control" formControlName="price" step="0.01">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-medium">Unit</label>
+            <input type="text" class="form-control" formControlName="unit">
+          </div>
+        </div>
+        
+        <div class="mt-4 pt-3 border-top text-end">
+          <button type="button" routerLink="/products" class="btn btn-light me-2">Cancel</button>
+          <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm" [disabled]="productForm.invalid || submitting">
+            <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span> Save Product
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,66 @@
+<div class="container-fluid" style="max-width: 800px; margin: 0 auto;">
+  <div *ngIf="toastMessage" class="toast align-items-center show position-fixed top-0 end-0 m-3 text-white bg-{{ toastType }} border-0 shadow-lg" role="alert" style="z-index: 1055;">
+    <div class="d-flex"><div class="toast-body fw-medium">{{ toastMessage }}</div></div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold m-0">{{ etagereId ? 'Edit Etagere' : 'Add New Etagere' }}</h2>
+    <a routerLink="/etageres" class="btn btn-light shadow-sm fw-medium">Back to List</a>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-4">
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-warning"></div>
+      </div>
+      
+      <form *ngIf="!loading" [formGroup]="etagereForm" (ngSubmit)="onSubmit()">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-medium">Etagere Code</label>
+            <input type="text" class="form-control" formControlName="etagere_code">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-medium">Etagere Name</label>
+            <input type="text" class="form-control" formControlName="name">
+          </div>
+          
+          <div class="col-md-6">
+            <label class="form-label fw-medium">Depot</label>
+            <select formControlName="depot_id" class="form-select">
+              <option [value]="null" disabled>Select Depot...</option>
+              <option *ngFor="let d of depots" [value]="d.id">{{ d.name }} ({{ d.depot_code }})</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-medium">Product</label>
+            <select formControlName="product_id" class="form-select">
+              <option [value]="null">-- None --</option>
+              <option *ngFor="let p of products" [value]="p.id">{{ p.name }} ({{ p.product_code }})</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-medium">Section</label>
+            <input type="text" class="form-control" formControlName="section">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-medium">Current Quantity</label>
+            <input type="number" class="form-control" formControlName="quantity">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-medium">Max Capacity</label>
+            <input type="number" class="form-control" formControlName="max_capacity">
+          </div>
+        </div>
+        
+        <div class="mt-4 pt-3 border-top text-end">
+          <button type="button" routerLink="/etageres" class="btn btn-light me-2">Cancel</button>
+          <button type="submit" class="btn btn-warning px-4 fw-bold shadow-sm" [disabled]="etagereForm.invalid || submitting">
+            <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span> Save Etagere
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

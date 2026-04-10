@@ -1,0 +1,2 @@
+.max-w-md { max-width: 700px; margin: 0 auto; }
+.hover-shadow:hover { box-shadow: 0 4px 10px rgba(13, 202, 240, 0.3) !important; transform: translateY(-1px); }

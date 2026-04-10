@@ -13,7 +13,7 @@
       <div class="card text-center" style="background:var(--green-bg);border:1px solid var(--green-border);box-shadow:var(--shadow)">
         <div class="card-body">
           <div class="text-uppercase fw-bold text-success small mb-2" style="letter-spacing:.5px">Produits Étagère</div>
-          <div class="display-4 fw-bold text-success font-monospace">23</div>
+          <div class="display-4 fw-bold text-success font-monospace">{{ stockService.getTotalStock() }}</div>
           <div class="text-muted small">Détectés par YOLO</div>
         </div>
       </div>
@@ -22,17 +22,17 @@
       <div class="card text-center" style="background:var(--blue-bg);border:1px solid rgba(37,99,235,0.2);box-shadow:var(--shadow)">
         <div class="card-body">
           <div class="text-uppercase fw-bold text-primary small mb-2" style="letter-spacing:.5px">Produits Dépôt</div>
-          <div class="display-4 fw-bold text-primary font-monospace">24</div>
+          <div class="display-4 fw-bold text-primary font-monospace">{{ stockService.getTotalDepot() }}</div>
           <div class="text-muted small">Inventaire total</div>
         </div>
       </div>
     </div>
     <div class="col-md-4">
-      <div class="card text-center" style="background:var(--red-bg);border:1px solid rgba(214,59,59,0.2);box-shadow:var(--shadow)">
+      <div class="card text-center" [style.background]="theftCheck?.hasTheft ? 'var(--red-bg)' : 'var(--green-bg)'" [style.border]="theftCheck?.hasTheft ? '1px solid rgba(214,59,59,0.2)' : '1px solid var(--green-border)'" style="box-shadow:var(--shadow)">
         <div class="card-body">
-          <div class="text-uppercase fw-bold text-danger small mb-2" style="letter-spacing:.5px">Différence</div>
-          <div class="display-4 fw-bold text-danger font-monospace">-1</div>
-          <div class="text-muted small">Produit(s) manquant(s)</div>
+          <div class="text-uppercase fw-bold small mb-2" [style.color]="theftCheck?.hasTheft ? 'var(--red)' : 'var(--green)'" style="letter-spacing:.5px">Vérification</div>
+          <div class="display-4 fw-bold font-monospace" [style.color]="theftCheck?.hasTheft ? 'var(--red)' : 'var(--green)'">{{ theftCheck?.hasTheft ? '⚠️' : '✅' }}</div>
+          <div class="text-muted small">{{ theftCheck?.message }}</div>
         </div>
       </div>
     </div>
@@ -81,6 +81,7 @@
     <div class="card-header">
       <span class="card-title">📦 Produits en Dépôt</span>
       <span class="badge bg-primary ms-2">Inventaire initial</span>
+      <button class="btn btn-sm btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#addStockModal">Ajouter Stock</button>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
@@ -101,6 +102,36 @@
               <td class="font-monospace fw-bold text-primary">{{ p.qtyD }}</td>
               <td class="font-monospace" [style.color]="p.qtyEColor">{{ p.qtyE }}</td>
               <td><span class="badge" [ngClass]="p.cls"><span class="ch-dot"></span>{{ p.status }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Étagères -->
+  <div *ngIf="activeTab==='etageres'" class="card">
+    <div class="card-header">
+      <span class="card-title">📚 Gestion des Étagères</span>
+      <button class="btn btn-sm btn-success ms-auto" data-bs-toggle="modal" data-bs-target="#addEtagereModal">Ajouter Étagère</button>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Nom Étagère</th>
+              <th>Code</th>
+              <th>Zone</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let e of etageres">
+              <td class="text-muted small">{{ e.id }}</td>
+              <td>{{ e.nom_etagere }}</td>
+              <td class="font-monospace">{{ e.code }}</td>
+              <td>{{ e.zone }}</td>
             </tr>
           </tbody>
         </table>
@@ -143,6 +174,76 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for adding Stock -->
+<div class="modal fade" id="addStockModal" tabindex="-1" aria-labelledby="addStockModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addStockModalLabel">Ajouter un Stock</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label for="itemName" class="form-label">Nom du Produit</label>
+            <input type="text" class="form-control" id="itemName" [(ngModel)]="newStock.item_name" name="itemName">
+          </div>
+          <div class="mb-3">
+            <label for="nbStock" class="form-label">Nombre de Stock</label>
+            <input type="number" class="form-control" id="nbStock" [(ngModel)]="newStock.nb_stock" name="nbStock">
+          </div>
+          <div class="mb-3">
+            <label for="nbDepot" class="form-label">Nombre de Dépôt</label>
+            <input type="number" class="form-control" id="nbDepot" [(ngModel)]="newStock.nb_depot" name="nbDepot">
+          </div>
+          <div class="mb-3">
+            <label for="etagereId" class="form-label">ID Étagère</label>
+            <select class="form-control" id="etagereId" [(ngModel)]="newStock.etagere_id" name="etagereId">
+              <option *ngFor="let e of etageres" [value]="e.id">{{ e.nom_etagere }}</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+        <button type="button" class="btn btn-primary" (click)="addStock()" data-bs-dismiss="modal">Ajouter</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for adding Etagere -->
+<div class="modal fade" id="addEtagereModal" tabindex="-1" aria-labelledby="addEtagereModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addEtagereModalLabel">Ajouter une Étagère</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label for="nomEtagere" class="form-label">Nom de l'Étagère</label>
+            <input type="text" class="form-control" id="nomEtagere" [(ngModel)]="newEtagere.nom_etagere" name="nomEtagere">
+          </div>
+          <div class="mb-3">
+            <label for="code" class="form-label">Code</label>
+            <input type="text" class="form-control" id="code" [(ngModel)]="newEtagere.code" name="code">
+          </div>
+          <div class="mb-3">
+            <label for="zone" class="form-label">Zone</label>
+            <input type="text" class="form-control" id="zone" [(ngModel)]="newEtagere.zone" name="zone">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+        <button type="button" class="btn btn-success" (click)="addEtagere()" data-bs-dismiss="modal">Ajouter</button>
       </div>
     </div>
   </div>

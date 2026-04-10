@@ -17,6 +17,7 @@ export class AccountComponent implements OnInit {
   prenom = '';
   email = '';
   role = '';
+  telephone = '';
   mot_de_passe = '';
   error = '';
   success = '';
@@ -45,6 +46,7 @@ export class AccountComponent implements OnInit {
     this.nom = this.currentUser.nom;
     this.prenom = this.currentUser.prenom;
     this.email = this.currentUser.email;
+    this.telephone = this.currentUser.telephone || '';
     this.role = this.currentUser.role;
   }
 
@@ -53,14 +55,11 @@ export class AccountComponent implements OnInit {
       return;
     }
 
-    this.loading = true;
-    this.error = '';
-    this.success = '';
-
-    const payload: Partial<{ nom: string; prenom: string; email: string; mot_de_passe: string; role: string }> = {
+    const payload: Partial<{ nom: string; prenom: string; email: string; telephone: string; mot_de_passe: string; role: string }> = {
       nom: this.nom,
       prenom: this.prenom,
       email: this.email,
+      telephone: this.telephone,
       role: this.role,
     };
 

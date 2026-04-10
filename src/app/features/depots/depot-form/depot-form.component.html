@@ -1,0 +1,54 @@
+<div class="container-fluid" style="max-width: 800px; margin: 0 auto;">
+  <div *ngIf="toastMessage" class="toast align-items-center show position-fixed top-0 end-0 m-3 text-white bg-{{ toastType }} border-0 shadow-lg" role="alert" style="z-index: 1055;">
+    <div class="d-flex"><div class="toast-body fw-medium">{{ toastMessage }}</div></div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold m-0">{{ depotId ? 'Edit Depot' : 'Add New Depot' }}</h2>
+    <a routerLink="/depots" class="btn btn-light shadow-sm fw-medium">Back to List</a>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-4">
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-success"></div>
+      </div>
+      
+      <form *ngIf="!loading" [formGroup]="depotForm" (ngSubmit)="onSubmit()">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-medium">Depot Code</label>
+            <input type="text" class="form-control" formControlName="depot_code">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-medium">Depot Name</label>
+            <input type="text" class="form-control" formControlName="name">
+          </div>
+          <div class="col-md-12">
+            <label class="form-label fw-medium">Location</label>
+            <input type="text" class="form-control" formControlName="location">
+          </div>
+          <div class="col-md-12">
+            <label class="form-label fw-medium">Address</label>
+            <textarea class="form-control" formControlName="address" rows="2"></textarea>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-medium">Manager Name</label>
+            <input type="text" class="form-control" formControlName="manager_name">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-medium">Phone</label>
+            <input type="text" class="form-control" formControlName="phone">
+          </div>
+        </div>
+        
+        <div class="mt-4 pt-3 border-top text-end">
+          <button type="button" routerLink="/depots" class="btn btn-light me-2">Cancel</button>
+          <button type="submit" class="btn btn-success px-4 fw-bold shadow-sm" [disabled]="depotForm.invalid || submitting">
+            <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span> Save Depot
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

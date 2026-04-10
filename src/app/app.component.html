@@ -1,50 +1,12 @@
-<div class="app-layout">
-  <nav class="sidebar">
-    <div class="logo-wrap">
-      <div class="logo-icon">🛡️</div>
-      <div class="logo-txt">Stock<br>Monitoring</div>
-    </div>
-    <div class="nav">
-      <a class="nav-btn" routerLink="/home" routerLinkActive="active">
-        <span class="ni">🏠</span> Home
-      </a>
-      <a class="nav-btn" routerLink="/live-camera" routerLinkActive="active">
-        <span class="ni">📷</span> Live Camera
-      </a>
-      <a class="nav-btn" routerLink="/stock" routerLinkActive="active">
-        <span class="ni">📦</span> Stock
-      </a>
-      <a class="nav-btn" routerLink="/etat" routerLinkActive="active">
-        <span class="ni">⏳</span> État
-      </a>
-      <a class="nav-btn" routerLink="/alerts" routerLinkActive="active">
-        <span class="ni">🔔</span> Alerts
-        <span class="nbadge r">3</span>
-      </a>
-      <a class="nav-btn" routerLink="/account" routerLinkActive="active">
-        <span class="ni">👤</span> Account
-      </a>
-    </div>
-    <button class="logout">⏻ Logout</button>
-  </nav>
-
-  <div class="main">
-    <header class="hdr">
-      <div class="hdr-alert">
-        <div class="hdr-badge">1</div> Système: ALERT
-      </div>
-      <div class="sp"></div>
-      <div class="hdr-ok">
-        <div class="hdr-dot"></div> Système: OK
-      </div>
-      <div class="hdr-time">{{ currentTime }}</div>
-      <div class="hdr-avatar">
-        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="avatar">
-      </div>
-    </header>
-
-    <div class="pages">
+<div *ngIf="!authService.isLoggedIn()">
+  <router-outlet></router-outlet>
+</div>
+<div *ngIf="authService.isLoggedIn()" class="d-flex flex-column" style="min-height: 100vh;">
+  <app-navbar></app-navbar>
+  <div class="container-fluid flex-grow-1 d-flex p-0">
+    <app-sidebar class="bg-light border-end"></app-sidebar>
+    <main class="flex-grow-1 p-4 bg-white" style="min-width: 0;">
       <router-outlet></router-outlet>
-    </div>
+    </main>
   </div>
 </div>

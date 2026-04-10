@@ -1,0 +1,58 @@
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold m-0"><i class="bi bi-building me-2"></i>Depots</h2>
+    <a routerLink="/depots/new" class="btn btn-success fw-bold px-4 py-2 shadow-sm">
+      <i class="bi bi-plus-lg me-2"></i>Add Depot
+    </a>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger shadow-sm border-0">{{ error }}</div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+      <h5 class="m-0 text-muted fw-medium">Depot Locations</h5>
+      <input type="text" class="form-control w-25 shadow-sm bg-light border-0" placeholder="Search depots..." [(ngModel)]="searchTerm">
+    </div>
+    
+    <div class="card-body p-0">
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-success" role="status"></div>
+      </div>
+
+      <div class="table-responsive" *ngIf="!loading">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="text-muted fw-semibold py-3">ID</th>
+              <th class="text-muted fw-semibold py-3">Depot Code</th>
+              <th class="text-muted fw-semibold py-3">Name</th>
+              <th class="text-muted fw-semibold py-3">Location</th>
+              <th class="text-muted fw-semibold py-3">Manager</th>
+              <th class="text-muted fw-semibold py-3">Phone</th>
+              <th class="text-muted fw-semibold py-3">Created At</th>
+              <th class="text-muted fw-semibold py-3 text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of filteredItems">
+              <td>#{{ d.id }}</td>
+              <td><span class="badge bg-secondary">{{ d.depot_code }}</span></td>
+              <td class="fw-medium">{{ d.name }}</td>
+              <td>{{ d.location }}</td>
+              <td>{{ d.manager_name }}</td>
+              <td>{{ d.phone }}</td>
+              <td>{{ d.created_at | date:'shortDate' }}</td>
+              <td class="text-end">
+                <a [routerLink]="['/depots', d.id]" class="btn btn-sm btn-outline-primary me-2"><i class="bi bi-pencil"></i></a>
+                <button (click)="deleteItem(d.id)" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </td>
+            </tr>
+            <tr *ngIf="filteredItems.length === 0">
+              <td colspan="8" class="text-center py-4 text-muted">No depots found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

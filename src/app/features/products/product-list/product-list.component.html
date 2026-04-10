@@ -1,0 +1,60 @@
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold m-0"><i class="bi bi-box me-2"></i>Products</h2>
+    <a routerLink="/products/new" class="btn btn-primary fw-bold px-4 py-2 shadow-sm">
+      <i class="bi bi-plus-lg me-2"></i>Add Product
+    </a>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger shadow-sm border-0">{{ error }}</div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+      <h5 class="m-0 text-muted fw-medium">Product Inventory</h5>
+      <input type="text" class="form-control w-25 shadow-sm bg-light border-0" placeholder="Search products..." [(ngModel)]="searchTerm">
+    </div>
+    
+    <div class="card-body p-0">
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+      </div>
+
+      <div class="table-responsive" *ngIf="!loading">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="text-muted fw-semibold py-3">ID</th>
+              <th class="text-muted fw-semibold py-3">Product Code</th>
+              <th class="text-muted fw-semibold py-3">Name</th>
+              <th class="text-muted fw-semibold py-3">Category</th>
+              <th class="text-muted fw-semibold py-3">Barcode</th>
+              <th class="text-muted fw-semibold py-3">Price</th>
+              <th class="text-muted fw-semibold py-3">Unit</th>
+              <th class="text-muted fw-semibold py-3">Created At</th>
+              <th class="text-muted fw-semibold py-3 text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of filteredItems">
+              <td>#{{ p.id }}</td>
+              <td><span class="badge bg-secondary">{{ p.product_code }}</span></td>
+              <td class="fw-medium">{{ p.name }}</td>
+              <td>{{ p.category }}</td>
+              <td>{{ p.barcode }}</td>
+              <td>{{ p.price !== null ? '$' + p.price : '' }}</td>
+              <td>{{ p.unit }}</td>
+              <td>{{ p.created_at | date:'shortDate' }}</td>
+              <td class="text-end">
+                <a [routerLink]="['/products', p.id]" class="btn btn-sm btn-outline-primary me-2"><i class="bi bi-pencil"></i></a>
+                <button (click)="deleteItem(p.id)" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </td>
+            </tr>
+            <tr *ngIf="filteredItems.length === 0">
+              <td colspan="9" class="text-center py-4 text-muted">No products found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
