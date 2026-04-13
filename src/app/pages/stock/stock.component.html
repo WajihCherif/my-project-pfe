@@ -1,335 +1,560 @@
-<div class="container-fluid py-4">
+<div class="stock-dashboard-container py-4">
 
   <!-- HEADER -->
-  <div class="d-flex align-items-center mb-4">
-    <div class="fs-4 fw-bold me-3">Stock — Vue d'ensemble</div>
-  </div>
-
-  <!-- KPI CARDS -->
-  <div class="row g-3 mb-4">
-    <div class="col-md-3">
-      <div class="card text-center border-primary">
-        <div class="card-body">
-          <div class="text-primary fw-bold">PRODUITS</div>
-          <div class="fs-2 fw-bold text-primary">{{ products.length }}</div>
-          <div class="text-muted small">Total catalogue</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card text-center border-warning">
-        <div class="card-body">
-          <div class="text-warning fw-bold">ETAGERES</div>
-          <div class="fs-2 fw-bold text-warning">{{ etageres.length }}</div>
-          <div class="text-muted small">En rayon</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card text-center border-success">
-        <div class="card-body">
-          <div class="text-success fw-bold">DEPOTS</div>
-          <div class="fs-2 fw-bold text-success">{{ depots.length }}</div>
-          <div class="text-muted small">Sites de stockage</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card text-center border-danger">
-        <div class="card-body">
-          <div class="text-danger fw-bold">TRANSFERTS</div>
-          <div class="fs-2 fw-bold text-danger">{{ transfers.length }}</div>
-          <div class="text-muted small">Mouvements stock</div>
-        </div>
-      </div>
+  <div class="d-flex justify-content-between align-items-center mb-4 px-3">
+    <div class="fs-3 fw-bold text-gradient">Gestion des Stocks</div>
+    <div class="badge bg-soft-primary p-2 fs-6">
+      <i class="bi bi-clock-history me-2"></i> Temps Réel
     </div>
   </div>
 
-  <!-- LOADING -->
-  @if (loading) {
-    <div class="text-center py-5">
-      <div class="spinner-border text-primary" style="width:3rem;height:3rem"></div>
-      <p class="mt-3 text-muted">Chargement des donnees...</p>
+  <!-- ERROR ALERT -->
+  @if (error) {
+    <div class="alert alert-danger mx-3 shadow-sm rounded-3">
+      <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Erreur :</strong> {{ error }}
     </div>
   }
 
-  <!-- ERROR -->
-  @if (error) {
-    <div class="alert alert-danger">
-      <strong>Erreur :</strong> {{ error }}
+  <!-- TAB NAVIGATION -->
+  <ul class="nav nav-pills custom-tabs mb-4 px-3 gap-2" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 'overview'" (click)="setTab('overview')">
+        <i class="bi bi-grid-fill me-2"></i>Vue Globale
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 'products'" (click)="setTab('products')">
+        <i class="bi bi-box-seam me-2"></i>Produits
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 'etageres'" (click)="setTab('etageres')">
+        <i class="bi bi-bookshelf me-2"></i>Étagères
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 'depots'" (click)="setTab('depots')">
+        <i class="bi bi-building me-2"></i>Dépôts
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 'transfers'" (click)="setTab('transfers')">
+        <i class="bi bi-arrow-left-right me-2"></i>Transferts
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 'users'" (click)="setTab('users')">
+        <i class="bi bi-people-fill me-2"></i>Utilisateurs
+      </button>
+    </li>
+  </ul>
+
+  <!-- LOADING SPINNER -->
+  @if (loading) {
+    <div class="d-flex flex-column align-items-center justify-content-center py-5">
+      <div class="spinner-grow text-primary" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Chargement...</span>
+      </div>
+      <p class="mt-3 text-muted fw-semibold tracking-wide">Synchronisation avec le serveur...</p>
     </div>
   }
 
   @if (!loading && !error) {
+    <div class="tab-content px-3">
 
-    <!-- ROW 1 : PRODUITS + ETAGERES -->
-    <div class="row g-4 mb-4">
-
-      <!-- TABLE PRODUITS -->
-      <div class="col-lg-6">
-        <div class="card h-100">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Produits</h5>
-            <span class="badge bg-primary">{{ filteredProducts.length }}</span>
+      <!-- ==================== OVERVIEW TAB ==================== -->
+      <div class="tab-pane fade" [class.show]="activeTab === 'overview'" [class.active]="activeTab === 'overview'">
+        <div class="row g-4">
+          <!-- KPI Cards -->
+          <div class="col-md-3">
+            <div class="card kpi-card border-0 shadow-sm bg-gradient-primary h-100 p-4">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="text-white-50 fw-bold mb-1">PRODUITS</div>
+                  <div class="fs-1 fw-bolder text-white">{{ products.length }}</div>
+                </div>
+                <div class="kpi-icon bg-white bg-opacity-25 rounded-circle p-3">
+                  <i class="bi bi-box text-white fs-3"></i>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="card-body p-2">
-            <input class="form-control form-control-sm mb-2"
-                   placeholder="Rechercher un produit..."
-                   [(ngModel)]="searchProduct">
-            <div class="table-responsive" style="max-height:320px;overflow-y:auto">
-              <table class="table table-hover table-sm mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th>#</th>
-                    <th>Code</th>
-                    <th>Nom</th>
-                    <th>Categorie</th>
-                    <th>Prix</th>
-                    <th>Unite</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (p of filteredProducts; track p.id) {
-                    <tr>
-                      <td><span class="badge bg-light text-dark">{{ p.id }}</span></td>
-                      <td><code>{{ p.product_code }}</code></td>
-                      <td><strong>{{ p.name }}</strong></td>
-                      <td>
-                        <span class="badge bg-light text-dark">
-                          {{ p.category ? p.category : '-' }}
-                        </span>
-                      </td>
-                      <td class="text-success fw-bold">
-                        {{ p.price | number:'1.2-2' }}
-                      </td>
-                      <td>{{ p.unit }}</td>
-                    </tr>
-                  }
-                  @if (filteredProducts.length === 0) {
-                    <tr>
-                      <td colspan="6" class="text-center text-muted py-3">
-                        Aucun produit trouve
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
+          <div class="col-md-3">
+            <div class="card kpi-card border-0 shadow-sm bg-gradient-warning h-100 p-4">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="text-white-50 fw-bold mb-1">ÉTAGÈRES</div>
+                  <div class="fs-1 fw-bolder text-white">{{ etageres.length }}</div>
+                </div>
+                <div class="kpi-icon bg-white bg-opacity-25 rounded-circle p-3">
+                  <i class="bi bi-bookshelf text-white fs-3"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card kpi-card border-0 shadow-sm bg-gradient-success h-100 p-4">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="text-white-50 fw-bold mb-1">DÉPÔTS</div>
+                  <div class="fs-1 fw-bolder text-white">{{ depots.length }}</div>
+                </div>
+                <div class="kpi-icon bg-white bg-opacity-25 rounded-circle p-3">
+                  <i class="bi bi-building text-white fs-3"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card kpi-card border-0 shadow-sm bg-gradient-danger h-100 p-4">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="text-white-50 fw-bold mb-1">TRANSFERTS</div>
+                  <div class="fs-1 fw-bolder text-white">{{ transfers.length }}</div>
+                </div>
+                <div class="kpi-icon bg-white bg-opacity-25 rounded-circle p-3">
+                  <i class="bi bi-arrow-left-right text-white fs-3"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-5 bg-glass">
+              <i class="bi bi-clipboard-data text-primary opacity-50 mb-3" style="font-size: 4rem;"></i>
+              <h4 class="fw-bold text-dark">Tableau de Bord Actif</h4>
+              <p class="text-muted">Sélectionnez un onglet ci-dessus pour gérer les entités en détail.</p>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- TABLE ETAGERES -->
-      <div class="col-lg-6">
-        <div class="card h-100">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Etageres</h5>
-            <span class="badge bg-warning text-dark">{{ filteredEtageres.length }}</span>
-          </div>
-          <div class="card-body p-2">
-            <input class="form-control form-control-sm mb-2"
-                   placeholder="Rechercher une etagere..."
-                   [(ngModel)]="searchEtagere">
-            <div class="table-responsive" style="max-height:320px;overflow-y:auto">
-              <table class="table table-hover table-sm mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th>#</th>
-                    <th>Code</th>
-                    <th>Nom</th>
-                    <th>Quantite</th>
-                    <th>Capacite</th>
-                    <th>Niveau</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (e of filteredEtageres; track e.id) {
-                    <tr>
-                      <td><span class="badge bg-light text-dark">{{ e.id }}</span></td>
-                      <td><code>{{ e.etagere_code }}</code></td>
-                      <td><strong>{{ e.name }}</strong></td>
-                      <td><strong>{{ e.quantity }}</strong></td>
-                      <td>{{ e.max_capacity }}</td>
-                      <td>
-                        
-                      </td>
-                    </tr>
-                  }
-                  @if (filteredEtageres.length === 0) {
-                    <tr>
-                      <td colspan="6" class="text-center text-muted py-3">
-                        Aucune etagere trouvee
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
+      <!-- ==================== PRODUCTS TAB ==================== -->
+      <div class="tab-pane fade" [class.show]="activeTab === 'products'" [class.active]="activeTab === 'products'">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-glass">
+          <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-0 fw-bold">Catalogue de Produits</h5>
+              <small class="text-muted">{{ filteredProducts.length }} enregistrements</small>
             </div>
+            <div class="d-flex gap-2">
+              <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input class="form-control rounded-pill border-0 bg-light px-4" placeholder="Rechercher..." [(ngModel)]="searchProduct">
+              </div>
+              <button class="btn btn-primary rounded-pill shadow-sm px-4" (click)="openProductModal()">
+                <i class="bi bi-plus-lg me-2"></i>Nouveau
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive px-4 pb-4">
+            <table class="table table-hover align-middle custom-table">
+              <thead class="text-muted small text-uppercase">
+                <tr>
+                  <th>Code</th>
+                  <th>Produit</th>
+                  <th>Catégorie</th>
+                  <th>Prix</th>
+                  <th>Unité</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of filteredProducts; track p.id) {
+                  <tr>
+                    <td><span class="badge bg-light text-secondary border">{{ p.product_code }}</span></td>
+                    <td class="fw-bold">{{ p.name }}</td>
+                    <td><span class="badge bg-info bg-opacity-10 text-info">{{ p.category || '-' }}</span></td>
+                    <td class="text-success fw-bold">{{ p.price | number:'1.2-2' }} TND</td>
+                    <td class="text-muted">{{ p.unit }}</td>
+                    <td class="text-end">
+                      <button class="btn btn-sm btn-light rounded-circle me-2 action-btn" (click)="openProductModal(p)"><i class="bi bi-pencil-fill text-primary"></i></button>
+                      <button class="btn btn-sm btn-light rounded-circle action-btn" (click)="deleteProduct(p.id!)"><i class="bi bi-trash-fill text-danger"></i></button>
+                    </td>
+                  </tr>
+                }
+                @if (filteredProducts.length === 0) {
+                  <tr><td colspan="6" class="text-center text-muted py-4">Aucun produit trouvé.</td></tr>
+                }
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
 
-    </div
-    
-
-    <!-- ROW 2 : DEPOTS + TRANSFERTS -->
-    <div class="row g-4 mb-4">
-
-      <!-- TABLE DEPOTS -->
-      <div class="col-lg-6">
-        <div class="card h-100">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Depots</h5>
-            <span class="badge bg-success">{{ filteredDepots.length }}</span>
-          </div>
-          <div class="card-body p-2">
-            <input class="form-control form-control-sm mb-2"
-                   placeholder="Rechercher un depot..."
-                   [(ngModel)]="searchDepot">
-            <div class="table-responsive" style="max-height:320px;overflow-y:auto">
-              <table class="table table-hover table-sm mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th>#</th>
-                    <th>Code</th>
-                    <th>Nom</th>
-                    <th>Localisation</th>
-                    <th>Manager</th>
-                    <th>Tel</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (d of filteredDepots; track d.id) {
-                    <tr>
-                      <td><span class="badge bg-light text-dark">{{ d.id }}</span></td>
-                      <td><code>{{ d.depot_code }}</code></td>
-                      <td><strong>{{ d.name }}</strong></td>
-                      <td>{{ d.location ? d.location : '-' }}</td>
-                      <td>{{ d.manager_name ? d.manager_name : '-' }}</td>
-                      <td>{{ d.phone ? d.phone : '-' }}</td>
-                    </tr>
-                  }
-                  @if (filteredDepots.length === 0) {
-                    <tr>
-                      <td colspan="6" class="text-center text-muted py-3">
-                        Aucun depot trouve
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
+      <!-- ==================== ETAGERES TAB ==================== -->
+      <div class="tab-pane fade" [class.show]="activeTab === 'etageres'" [class.active]="activeTab === 'etageres'">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-glass">
+          <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-0 fw-bold">Gestion des Étagères</h5>
             </div>
+            <div class="d-flex gap-2">
+              <input class="form-control rounded-pill border-0 bg-light" placeholder="Rechercher..." [(ngModel)]="searchEtagere">
+              <button class="btn btn-warning text-dark fw-bold rounded-pill shadow-sm px-4 text-nowrap" (click)="openEtagereModal()">
+                <i class="bi bi-plus-lg me-2"></i>Nouvelle Étagère
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive px-4 pb-4">
+            <table class="table table-hover align-middle custom-table">
+              <thead class="text-muted small text-uppercase">
+                <tr>
+                  <th>Code</th>
+                  <th>Nom (Zone)</th>
+                  <th>ID Dépôt</th>
+                  <th>Stockage</th>
+                  <th>État</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (e of filteredEtageres; track e.id) {
+                  <tr>
+                    <td><span class="badge bg-light text-secondary border">{{ e.etagere_code }}</span></td>
+                    <td class="fw-bold">{{ e.name }}</td>
+                    <td><span class="badge bg-secondary">Dépôt #{{ e.depot_id }}</span></td>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <span class="fw-bold">{{ e.quantity || 0 }}</span> / <span class="text-muted">{{ e.max_capacity || 0 }}</span>
+                        <div class="progress flex-grow-1" style="height: 6px; width: 60px;">
+                          <div class="progress-bar bg-{{ stockLevel(e.quantity || 0, e.max_capacity || 0) }}" 
+                               [style.width.%]="((e.quantity || 0) / (e.max_capacity || 1)) * 100"></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge bg-{{ stockLevel(e.quantity || 0, e.max_capacity || 0) }} bg-opacity-25 text-{{ stockLevel(e.quantity || 0, e.max_capacity || 0) }} border-0 px-3 py-2 rounded-pill">
+                        {{ stockLabel(e.quantity || 0, e.max_capacity || 0) }}
+                      </span>
+                    </td>
+                    <td class="text-end">
+                      <button class="btn btn-sm btn-light rounded-circle me-2 action-btn" (click)="openEtagereModal(e)"><i class="bi bi-pencil-fill text-warning"></i></button>
+                      <button class="btn btn-sm btn-light rounded-circle action-btn" (click)="deleteEtagere(e.id!)"><i class="bi bi-trash-fill text-danger"></i></button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
 
-      <!-- TABLE TRANSFERTS -->
-      <div class="col-lg-6">
-        <div class="card h-100">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Transferts</h5>
-            <span class="badge bg-danger">{{ filteredTransfers.length }}</span>
-          </div>
-          <div class="card-body p-2">
-            <input class="form-control form-control-sm mb-2"
-                   placeholder="Rechercher un transfert..."
-                   [(ngModel)]="searchTransfer">
-            <div class="table-responsive" style="max-height:320px;overflow-y:auto">
-              <table class="table table-hover table-sm mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th>#</th>
-                    <th>Produit</th>
-                    <th>De</th>
-                    <th>Vers</th>
-                    <th>Qte</th>
-                    <th>Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (t of filteredTransfers; track t.id) {
-                    <tr>
-                      <td><span class="badge bg-light text-dark">{{ t.id }}</span></td>
-                      <td><span class="badge bg-primary">P{{ t.product_id }}</span></td>
-                      <td><code class="text-danger">E{{ t.from_etagere_id }}</code></td>
-                      <td><code class="text-success">E{{ t.to_etagere_id }}</code></td>
-                      <td><strong>{{ t.quantity }}</strong></td>
-                      <td><small>{{ t.transfer_date | date:'dd/MM/yy' }}</small></td>
-                    </tr>
-                  }
-                  @if (filteredTransfers.length === 0) {
-                    <tr>
-                      <td colspan="6" class="text-center text-muted py-3">
-                        Aucun transfert trouve
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
+      <!-- ==================== DEPOTS TAB ==================== -->
+      <div class="tab-pane fade" [class.show]="activeTab === 'depots'" [class.active]="activeTab === 'depots'">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-glass">
+          <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">Centres de Stockage (Dépôts)</h5>
+            <div class="d-flex gap-2">
+              <input class="form-control rounded-pill border-0 bg-light" placeholder="Rechercher..." [(ngModel)]="searchDepot">
+              <button class="btn btn-success fw-bold rounded-pill shadow-sm px-4 text-nowrap" (click)="openDepotModal()">
+                <i class="bi bi-plus-lg me-2"></i>Nouveau Dépôt
+              </button>
             </div>
+          </div>
+          <div class="table-responsive px-4 pb-4">
+            <table class="table table-hover align-middle custom-table">
+              <thead class="text-muted small text-uppercase">
+                <tr>
+                  <th>Code</th>
+                  <th>Nom du Dépôt</th>
+                  <th>Localisation / Adresse</th>
+                  <th>Responsable</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (d of filteredDepots; track d.id) {
+                  <tr>
+                    <td><span class="badge bg-success bg-opacity-10 text-success border border-success">{{ d.depot_code }}</span></td>
+                    <td class="fw-bold">{{ d.name }}</td>
+                    <td class="text-muted"><i class="bi bi-geo-alt me-1"></i>{{ d.location || d.address || 'Non spécifié' }}</td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="avatar bg-light text-secondary rounded-circle me-2 d-flex justify-content-center align-items-center" style="width:30px; height:30px;">
+                          <i class="bi bi-person"></i>
+                        </div>
+                        {{ d.manager_name || 'Aucun' }}
+                      </div>
+                    </td>
+                    <td class="text-end">
+                      <button class="btn btn-sm btn-light rounded-circle me-2 action-btn" (click)="openDepotModal(d)"><i class="bi bi-pencil-fill text-success"></i></button>
+                      <button class="btn btn-sm btn-light rounded-circle action-btn" (click)="deleteDepot(d.id!)"><i class="bi bi-trash-fill text-danger"></i></button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== TRANSFERS TAB ==================== -->
+      <div class="tab-pane fade" [class.show]="activeTab === 'transfers'" [class.active]="activeTab === 'transfers'">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-glass">
+          <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">Historique des Transferts</h5>
+            <div class="d-flex gap-2">
+              <input class="form-control rounded-pill border-0 bg-light" placeholder="Rechercher..." [(ngModel)]="searchTransfer">
+              <button class="btn btn-danger text-white fw-bold rounded-pill shadow-sm px-4 text-nowrap" (click)="openTransferModal()">
+                <i class="bi bi-arrow-left-right me-2"></i>Nouveau Mouvement
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive px-4 pb-4">
+            <table class="table table-hover align-middle custom-table">
+              <thead class="text-muted small text-uppercase">
+                <tr>
+                  <th>Produit</th>
+                  <th>Origine <i class="bi bi-arrow-right mx-1"></i> Destination</th>
+                  <th>Quantité</th>
+                  <th>Date</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (t of filteredTransfers; track t.id) {
+                  <tr>
+                    <td><span class="badge bg-primary bg-opacity-10 text-primary">Prod #{{ t.product_id }}</span></td>
+                    <td>
+                      <span class="badge bg-dark">Étagère #{{ t.from_etagere_id }}</span>
+                      <i class="bi bi-arrow-right mx-2 text-muted"></i>
+                      <span class="badge bg-success">Étagère #{{ t.to_etagere_id }}</span>
+                    </td>
+                    <td><span class="fw-bold fs-5 text-danger">{{ t.quantity }}</span></td>
+                    <td class="text-muted small"><i class="bi bi-calendar3 me-2"></i>{{ t.transfer_date | date:'short' }}</td>
+                    <td class="text-end">
+                      <button class="btn btn-sm btn-light rounded-circle action-btn" (click)="deleteTransfer(t.id!)"><i class="bi bi-x-circle-fill text-danger"></i></button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== USERS TAB ==================== -->
+      <div class="tab-pane fade" [class.show]="activeTab === 'users'" [class.active]="activeTab === 'users'">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-glass">
+          <div class="card-header bg-white border-0 p-4">
+            <h5 class="mb-0 fw-bold">Comptes Utilisateurs</h5>
+          </div>
+          <div class="table-responsive px-4 pb-4 mt-3">
+            <table class="table table-hover align-middle custom-table">
+              <thead class="text-muted small text-uppercase">
+                <tr>
+                  <th>Utilisateur</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (u of filteredUsers; track u.id) {
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="avatar bg-gradient-primary text-white rounded-circle me-3 d-flex justify-content-center align-items-center fw-bold" style="width:40px; height:40px;">
+                          {{ u.username.charAt(0).toUpperCase() }}
+                        </div>
+                        <div>
+                          <div class="fw-bold">{{ u.username }}</div>
+                          <div class="small text-muted">Utilisateur #{{ u.id }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{{ u.email }}</td>
+                    <td>
+                      <span class="badge rounded-pill border px-3 py-2" [ngClass]="u.role === 'admin' ? 'border-danger text-danger bg-danger bg-opacity-10' : 'border-secondary text-secondary bg-light'">
+                        <i class="bi" [ngClass]="u.role === 'admin' ? 'bi-shield-lock-fill' : 'bi-person-fill'"></i> {{ u.role }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <span class="text-muted small">{{ u.created_at | date:'shortDate' }}</span>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
 
     </div>
-
-    <!-- ROW 3 : UTILISATEURS pleine largeur -->
-    <div class="row g-4">
-      <div class="col-12">
-        <div class="card">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Utilisateurs</h5>
-            <span class="badge bg-secondary">{{ filteredUsers.length }}</span>
-          </div>
-          <div class="card-body p-2">
-            <input class="form-control form-control-sm mb-2"
-                   placeholder="Rechercher un utilisateur..."
-                   [(ngModel)]="searchUser">
-            <div class="table-responsive">
-              <table class="table table-hover table-sm mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th>#</th>
-                    <th>Username</th>
-                    <th>Nom complet</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Statut</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (u of filteredUsers; track u.id) {
-                    <tr>
-                      <td><span class="badge bg-light text-dark">{{ u.id }}</span></td>
-                      <td><strong>{{ u.username }}</strong></td>
-                      
-                      <td><small class="text-muted">{{ u.email }}</small></td>
-                      <td>
-                        <span class="badge"
-                              [ngClass]="u.role === 'admin' ? 'bg-danger' : 'bg-secondary'">
-                          {{ u.role }}
-                        </span>
-                      </td>
-                      <td>
-                       
-                      </td>
-                    </tr>
-                  }
-                  @if (filteredUsers.length === 0) {
-                    <tr>
-                      <td colspan="6" class="text-center text-muted py-3">
-                        Aucun utilisateur trouve
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
   }
 
+</div>
+
+<!-- ==================== MODALS INLINE IMPLEMENTATION ==================== -->
+<!-- To avoid reliance on external JS, we use pure CSS & Angular styling for Modals -->
+<div class="custom-modal-backdrop" *ngIf="showProductModal || showEtagereModal || showDepotModal || showTransferModal"></div>
+
+<!-- PRODUCT MODAL -->
+<div class="modal custom-modal" tabindex="-1" [class.show]="showProductModal" [style.display]="showProductModal ? 'block' : 'none'">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header bg-light border-0 py-3">
+        <h5 class="modal-title fw-bold text-primary">
+          <i class="bi" [ngClass]="editingProduct?.['id'] ? 'bi-pencil-square' : 'bi-plus-circle'"></i> 
+          {{ editingProduct?.['id'] ? 'Modifier le Produit' : 'Ajouter un Produit' }}
+        </h5>
+        <button type="button" class="btn-close" (click)="showProductModal = false"></button>
+      </div>
+      <div class="modal-body px-4 py-4" *ngIf="editingProduct">
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="form-label text-muted small fw-bold">Code Produit*</label>
+            <input type="text" class="form-control rounded-3 bg-light border-0" [(ngModel)]="editingProduct.product_code" [disabled]="!!editingProduct?.['id']">
+          </div>
+          <div class="col-6">
+            <label class="form-label text-muted small fw-bold">Nom*</label>
+            <input type="text" class="form-control rounded-3" [(ngModel)]="editingProduct.name">
+          </div>
+          <div class="col-6">
+            <label class="form-label text-muted small fw-bold">Catégorie</label>
+            <input type="text" class="form-control rounded-3" [(ngModel)]="editingProduct.category">
+          </div>
+          <div class="col-6">
+            <label class="form-label text-muted small fw-bold">Unité</label>
+            <input type="text" class="form-control rounded-3" [(ngModel)]="editingProduct.unit">
+          </div>
+          <div class="col-12">
+            <label class="form-label text-muted small fw-bold">Prix (TND)</label>
+            <input type="number" class="form-control rounded-3" [(ngModel)]="editingProduct.price">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 bg-light py-3">
+        <button type="button" class="btn btn-white text-muted fw-bold rounded-pill px-4" (click)="showProductModal = false">Annuler</button>
+        <button type="button" class="btn btn-primary fw-bold rounded-pill shadow-sm px-4" (click)="saveProduct()">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ETAGERE MODAL -->
+<div class="modal custom-modal" tabindex="-1" [class.show]="showEtagereModal" [style.display]="showEtagereModal ? 'block' : 'none'">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header bg-light border-0 py-3">
+        <h5 class="modal-title fw-bold text-warning text-dark"><i class="bi bi-bookshelf me-2"></i>{{ editingEtagere?.['id'] ? 'Modifier L\'Étagère' : 'Nouvelle Étagère' }}</h5>
+        <button type="button" class="btn-close" (click)="showEtagereModal = false"></button>
+      </div>
+      <div class="modal-body px-4 py-4" *ngIf="editingEtagere">
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="form-label text-muted small fw-bold">Code Étagère*</label>
+            <input type="text" class="form-control rounded-3 bg-light border-0" [(ngModel)]="editingEtagere.etagere_code">
+          </div>
+          <div class="col-6">
+            <label class="form-label text-muted small fw-bold">Nom (Section)*</label>
+            <input type="text" class="form-control rounded-3" [(ngModel)]="editingEtagere.name">
+          </div>
+          <div class="col-12">
+            <label class="form-label text-muted small fw-bold">Appartient au Dépôt*</label>
+            <select class="form-select rounded-3" [(ngModel)]="editingEtagere.depot_id">
+              <option *ngFor="let d of depots" [value]="d.id">{{ d.name }} ({{d.depot_code}})</option>
+            </select>
+          </div>
+          <div class="col-6 mt-4">
+            <label class="form-label text-muted small fw-bold">Quantité Actuelle</label>
+            <input type="number" class="form-control rounded-3" [(ngModel)]="editingEtagere.quantity">
+          </div>
+          <div class="col-6 mt-4">
+            <label class="form-label text-muted small fw-bold">Capacité Max</label>
+            <input type="number" class="form-control rounded-3" [(ngModel)]="editingEtagere.max_capacity">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 bg-light py-3">
+        <button type="button" class="btn btn-white text-muted fw-bold rounded-pill px-4" (click)="showEtagereModal = false">Annuler</button>
+        <button type="button" class="btn btn-warning fw-bold rounded-pill shadow-sm px-4" (click)="saveEtagere()">Confirmer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DEPOT MODAL -->
+<div class="modal custom-modal" tabindex="-1" [class.show]="showDepotModal" [style.display]="showDepotModal ? 'block' : 'none'">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header bg-light border-0 py-3">
+        <h5 class="modal-title fw-bold text-success"><i class="bi bi-building me-2"></i>{{ editingDepot?.['id'] ? 'Modifier Dépôt' : 'Nouveau Dépôt' }}</h5>
+        <button type="button" class="btn-close" (click)="showDepotModal = false"></button>
+      </div>
+      <div class="modal-body px-4 py-4" *ngIf="editingDepot">
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="form-label text-muted small fw-bold">Code Dépôt*</label>
+            <input type="text" class="form-control rounded-3 bg-light border-0" [(ngModel)]="editingDepot.depot_code">
+          </div>
+          <div class="col-6">
+            <label class="form-label text-muted small fw-bold">Nom*</label>
+            <input type="text" class="form-control rounded-3" [(ngModel)]="editingDepot.name">
+          </div>
+          <div class="col-12 mt-3">
+            <label class="form-label text-muted small fw-bold">Localisation</label>
+            <input type="text" class="form-control rounded-3" [(ngModel)]="editingDepot.location">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 bg-light py-3">
+        <button type="button" class="btn btn-white text-muted fw-bold rounded-pill px-4" (click)="showDepotModal = false">Annuler</button>
+        <button type="button" class="btn btn-success fw-bold rounded-pill shadow-sm px-4" (click)="saveDepot()">Sauvegarder</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRANSFER MODAL -->
+<div class="modal custom-modal" tabindex="-1" [class.show]="showTransferModal" [style.display]="showTransferModal ? 'block' : 'none'">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header bg-danger text-white border-0 py-3">
+        <h5 class="modal-title fw-bold"><i class="bi bi-arrow-left-right me-2"></i>Nouveau Transfert</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="showTransferModal = false"></button>
+      </div>
+      <div class="modal-body px-4 py-4" *ngIf="editingTransfer">
+        <div class="alert alert-light border border-danger text-danger py-2 d-flex align-items-center">
+          <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+          Un transfert réduira le stock dans l'étagère source et l'augmentera dans la cible.
+        </div>
+        <div class="row g-3 mt-1">
+          <div class="col-12">
+            <label class="form-label text-muted small fw-bold">Produit à transférer</label>
+            <select class="form-select rounded-3 border-danger shadow-none" [(ngModel)]="editingTransfer.product_id">
+              <option *ngFor="let p of products" [value]="p.id">{{ p.name }} ({{ p.product_code }})</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label text-muted small fw-bold">Origine (De)</label>
+            <select class="form-select rounded-3" [(ngModel)]="editingTransfer.from_etagere_id">
+              <option *ngFor="let e of etageres" [value]="e.id">Étagère #{{ e.id }} - {{ e.name }}</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label text-muted small fw-bold">Destination (Vers)</label>
+            <select class="form-select rounded-3" [(ngModel)]="editingTransfer.to_etagere_id">
+              <option *ngFor="let e of etageres" [value]="e.id">Étagère #{{ e.id }} - {{ e.name }}</option>
+            </select>
+          </div>
+          <div class="col-12 mt-4 text-center">
+            <label class="form-label text-muted small fw-bold mb-2">Quantité</label>
+            <div class="d-flex justify-content-center align-items-center">
+              <input type="number" class="form-control text-center fw-bold fs-4 text-danger w-50 py-2 border-danger rounded-4" [(ngModel)]="editingTransfer.quantity" min="1">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 bg-light py-3">
+        <button type="button" class="btn btn-white text-muted fw-bold rounded-pill px-4" (click)="showTransferModal = false">Annuler</button>
+        <button type="button" class="btn btn-danger fw-bold rounded-pill shadow-sm px-4" (click)="saveTransfer()">Exécuter le Transfert</button>
+      </div>
+    </div>
+  </div>
 </div>
