@@ -1,49 +1,80 @@
-<div class="container-fluid py-4">
-  <div class="d-flex align-items-center mb-4">
-    <div class="fs-4 fw-bold me-3">🔔 Alertes</div>
+<div class="alerts-dashboard py-4 px-md-4">
+  <div class="d-flex align-items-center mb-5">
+    <div class="fs-2 fw-bolder text-gradient"><i class="bi bi-bell-fill me-3"></i>Centre d'Alertes YOLO</div>
   </div>
 
-  <div class="d-flex align-items-center justify-content-between mb-4">
-    <div class="d-flex align-items-center gap-3">
-      <span class="fw-bold fs-6">Alertes Actives</span>
-      <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm">{{ alerts.length }} alertes</span>
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <div class="d-flex align-items-center bg-white shadow-sm rounded-pill px-4 py-3">
+      <div class="position-relative me-3">
+        <i class="bi bi-exclamation-triangle-fill text-warning fs-4"></i>
+        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" *ngIf="alerts.length > 0"></span>
+      </div>
+      <div class="fw-bold text-dark fs-5">Alertes Actives</div>
+      <div class="badge bg-danger ms-3 px-3 py-2 rounded-pill shadow-sm">{{ alerts.length }}</div>
     </div>
-    <div class="d-flex gap-3">
-      <select class="form-select border-0 shadow-sm rounded-3">
-        <option>Toutes</option>
-        <option>Critiques</option>
-        <option>Warnings</option>
+    
+    <div class="d-flex bg-glass shadow-sm rounded-pill p-2">
+      <select class="form-select border-0 bg-transparent shadow-none fw-bold text-secondary me-2 cursor-pointer">
+        <option>Toutes les sévérités</option>
+        <option>Critiques & Urgences</option>
+        <option>Informatives</option>
       </select>
-      <select class="form-select border-0 shadow-sm rounded-3">
+      <div class="border-end mx-2"></div>
+      <select class="form-select border-0 bg-transparent shadow-none fw-bold text-secondary cursor-pointer">
         <option>Aujourd'hui</option>
-        <option>Cette semaine</option>
+        <option>7 Derniers jours</option>
       </select>
     </div>
   </div>
 
-  <div class="row">
+  <div class="row g-4 mt-2">
     <div class="col-12">
-      <div class="alert-list">
-        <div class="alert-card shadow-sm" *ngFor="let al of alerts" [class.critical-alert]="al.critical">
-          <div class="d-flex align-items-center p-3">
-            <div class="al-icon-wrap" [class.bg-danger-subtle]="al.critical" [class.bg-warning-subtle]="!al.critical">
-              <span class="al-icon">{{ al.icon }}</span>
+      <div class="alert-list-container">
+        
+        <!-- Loop over dynamic alerts -->
+        <div class="alert-card card bg-glass shadow-sm border-0 rounded-4 mb-3" 
+             *ngFor="let al of alerts" 
+             [ngClass]="al.critical ? 'border-danger critical-alert-border' : 'border-primary'">
+             
+          <div class="card-body p-4 d-flex flex-column flex-sm-row align-items-start align-items-sm-center">
+            
+            <div class="icon-circle shadow-sm me-sm-4 mb-3 mb-sm-0 flex-shrink-0 d-flex justify-content-center align-items-center" 
+                 [ngClass]="al.critical ? 'bg-danger bg-opacity-10 text-danger' : 'bg-warning bg-opacity-10 text-warning'"
+                 style="width: 56px; height: 56px; border-radius: 50%;">
+              <span class="fs-3">{{ al.icon }}</span>
             </div>
-            <div class="al-body ms-4 flex-grow-1">
-              <h6 class="mb-1 fw-bold" [class.text-danger]="al.critical">{{ al.title }}</h6>
-              <p class="mb-0 text-muted small">{{ al.sub }}</p>
+            
+            <div class="flex-grow-1 mb-3 mb-sm-0 pe-sm-4">
+              <div class="d-flex align-items-center mb-1">
+                <h5 class="mb-0 fw-bold" [ngClass]="al.critical ? 'text-danger' : 'text-dark'">{{ al.title }}</h5>
+                <span *ngIf="al.critical" class="badge bg-danger ms-3 rounded-pill">Urgent</span>
+              </div>
+              <p class="mb-0 text-muted mt-1">{{ al.sub }}</p>
             </div>
-            <div class="al-actions text-end d-flex flex-column align-items-end justify-content-center">
-              <span class="al-time text-muted small mb-2 d-inline-block">{{ al.time }}</span>
-              <button class="btn btn-sm btn-outline-secondary rounded-pill" (click)="dismissAlert(al.id)">Ignorer</button>
+            
+            <div class="d-flex flex-row flex-sm-column align-items-center align-items-sm-end ms-auto gap-2">
+              <div class="badge bg-light text-secondary border px-3 py-2 rounded-pill d-flex align-items-center">
+                <i class="bi bi-clock me-2"></i>{{ al.time }}
+              </div>
+              <button class="btn btn-sm btn-outline-secondary rounded-pill px-4 mt-sm-2 action-btn" (click)="dismissAlert(al.id)">
+                Ignorer
+              </button>
             </div>
+
           </div>
         </div>
-        <div *ngIf="alerts.length === 0" class="text-center text-muted p-5 bg-light rounded-4 border border-dashed">
-          <div class="fs-1 mb-3">🎉</div>
-          <h5>Aucune alerte active</h5>
-          <p>Tout fonctionne parfaitement.</p>
+
+        <!-- Empty State -->
+        <div *ngIf="alerts.length === 0" class="card bg-glass shadow-none border-0 rounded-4 p-5 text-center empty-state-card">
+          <div class="card-body py-5">
+            <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle mb-4" style="width: 100px; height: 100px;">
+              <i class="bi bi-shield-check" style="font-size: 3rem;"></i>
+            </div>
+            <h3 class="fw-bold text-dark mb-3">Aucune alerte active</h3>
+            <p class="text-muted mb-0 fs-5">Tous les systèmes de surveillance YOLO fonctionnent parfaitement. Aucun mouvement suspect ou diminution critiques des stocks ne requiert votre attention.</p>
+          </div>
         </div>
+
       </div>
     </div>
   </div>

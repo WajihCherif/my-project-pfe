@@ -1,57 +1,65 @@
-.alert-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+/* ── Layout ── */
+.alerts-dashboard {
+  min-height: 100vh;
+  background-color: #f8f9fc;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
 }
 
+/* ── Typography & Gradients ── */
+.text-gradient {
+  background: linear-gradient(135deg, #3a2fd6, #7e57c2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── Glassmorphism ── */
+.bg-glass {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+/* ── Alert List Container ── */
 .alert-card {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.05);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-left-width: 6px !important;
 }
 
 .alert-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
-  border-color: rgba(0,0,0,0.1);
 }
 
-.alert-card.critical-alert {
-  border-left: 4px solid var(--bs-danger);
+/* ── Critical Glow ── */
+.critical-alert-border {
+  border-left-color: #e74a3b !important;
+  animation: pulse-border 2s infinite;
 }
 
-.alert-card:not(.critical-alert) {
-  border-left: 4px solid var(--bs-warning);
+@keyframes pulse-border {
+  0% { box-shadow: 0 0 0 0 rgba(231, 74, 59, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(231, 74, 59, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(231, 74, 59, 0); }
 }
 
-.al-icon-wrap {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+/* ── Empty State ── */
+.empty-state-card {
+  border: 2px dashed rgba(28, 200, 138, 0.3) !important;
 }
 
-.al-icon {
-  font-size: 24px;
+.action-btn {
+  transition: all 0.2s;
+}
+.action-btn:hover {
+  background-color: #eaedf4;
+  color: #2b354f;
 }
 
-.al-actions button {
-  opacity: 0;
-  transform: translateX(10px);
-  transition: all 0.2s ease;
+select:focus {
+  outline: none;
+  box-shadow: none;
 }
-
-.alert-card:hover .al-actions button {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.border-dashed {
-  border-style: dashed !important;
+.cursor-pointer {
+  cursor: pointer;
 }

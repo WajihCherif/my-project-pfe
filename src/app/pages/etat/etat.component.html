@@ -1,102 +1,128 @@
-<div class="container-fluid">
-  <div class="pg-title mb-3">
-    <span class="icon">⏳</span> État du Stock
+<div class="etat-dashboard py-4 px-md-4">
+  <div class="d-flex align-items-center mb-5">
+    <div class="fs-2 fw-bolder text-gradient"><i class="bi bi-hourglass-split me-3"></i>État du Stock & Détections YOLO</div>
   </div>
 
-  <div class="etat-current card mb-3">
-    <div class="card-body">
-      <div class="etat-label mb-3">État Actuel du Système</div>
-      <div class="etat-row">
-        <div class="etat-state">
-          <div>
-            <div class="etat-label mb-2">Étagère principale</div>
-            <div class="state-chip mb-2">
-              <div class="dot"></div> ON_SHELF
-            </div>
-            <div class="state-timer">Stable depuis {{ timer }}s</div>
+  <div class="card bg-glass border-0 shadow-lg mb-5 rounded-4 overflow-hidden position-relative pt-2">
+    <div class="position-absolute top-0 start-0 w-100 bg-primary" style="height: 4px;"></div>
+    <div class="card-body p-4 p-md-5">
+      <div class="row align-items-center">
+        <div class="col-md-7 border-end-md">
+          <h5 class="fw-bold text-dark mb-4">État Actuel du Système (Caméra 1)</h5>
+          <div class="d-flex align-items-center mb-3">
+            <div class="pulse-ring bg-success me-3"></div>
+            <span class="fs-5 fw-bold text-success">ANALYSE EN COURS</span>
           </div>
+          <div class="text-muted mb-0">Connexion stable. En attente de détections...</div>
+          <div class="badge bg-light text-secondary border mt-3 px-3 py-2"><i class="bi bi-cpu me-2"></i>Modèle Actif : YOLO v8 Custom</div>
         </div>
-        <div class="text-center px-3">
-          <div class="display-6 font-monospace fw-bold">{{ clock }}</div>
-          <div class="text-muted small mt-1">Mise à jour en temps réel</div>
+        <div class="col-md-5 text-center mt-4 mt-md-0">
+          <div class="display-3 font-monospace fw-bolder text-dark mb-2">{{ clock }}</div>
+          <div class="badge bg-primary bg-opacity-10 text-primary fs-6 px-4 py-2 rounded-pill"><i class="bi bi-broadcast me-2"></i>Flux Temp Réel</div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="etat-stats row g-3 mb-3">
+  <div class="row g-4 mb-5">
     <div class="col-md-3">
-      <div class="es gr">
-        <div class="es-val">21</div>
-        <div class="es-lbl">ON_SHELF</div>
+      <div class="card kpi-card bg-glass border-0 shadow-sm rounded-4 h-100 p-4 text-center">
+        <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle mb-3 mx-auto" style="width: 60px; height: 60px;">
+          <i class="bi bi-check-circle-fill fs-2"></i>
+        </div>
+        <div class="text-dark fw-bold mb-1">ON SHELF</div>
+        <div class="fs-1 fw-bolder text-success">{{ onShelfCount }}</div>
       </div>
     </div>
+    
     <div class="col-md-3">
-      <div class="es am">
-        <div class="es-val">1</div>
-        <div class="es-lbl">TEMP_REMOVED</div>
+      <div class="card kpi-card bg-glass border-0 shadow-sm rounded-4 h-100 p-4 text-center">
+        <div class="d-inline-flex align-items-center justify-content-center bg-warning bg-opacity-10 text-warning rounded-circle mb-3 mx-auto" style="width: 60px; height: 60px;">
+          <i class="bi bi-exclamation-circle-fill fs-2"></i>
+        </div>
+        <div class="text-dark fw-bold mb-1">TEMP REMOVED</div>
+        <div class="fs-1 fw-bolder text-warning">{{ tempRemovedCount }}</div>
       </div>
     </div>
+    
     <div class="col-md-3">
-      <div class="es rd">
-        <div class="es-val">1</div>
-        <div class="es-lbl">REMOVED</div>
+      <div class="card kpi-card bg-glass border-0 shadow-sm rounded-4 h-100 p-4 text-center">
+        <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle mb-3 mx-auto" style="width: 60px; height: 60px;">
+          <i class="bi bi-x-circle-fill fs-2"></i>
+        </div>
+        <div class="text-dark fw-bold mb-1">REMOVED</div>
+        <div class="fs-1 fw-bolder text-danger">{{ removedCount }}</div>
       </div>
     </div>
+    
     <div class="col-md-3">
-      <div class="es bl">
-        <div class="es-val">98%</div>
-        <div class="es-lbl">Précision YOLO</div>
+      <div class="card kpi-card bg-gradient-primary border-0 shadow-sm rounded-4 h-100 p-4 text-center text-white">
+        <div class="d-inline-flex align-items-center justify-content-center bg-white bg-opacity-25 rounded-circle mb-3 mx-auto" style="width: 60px; height: 60px;">
+          <i class="bi bi-bullseye fs-2 text-white"></i>
+        </div>
+        <div class="text-white-50 fw-bold mb-1">CONFIDENCE</div>
+        <div class="fs-1 fw-bolder">98%</div>
       </div>
     </div>
   </div>
 
-  <div class="row g-3">
+  <div class="row g-4">
     <div class="col-lg-8">
-      <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <span class="card-title">📋 État par Produit</span>
-          <button class="btn btn-sm btn-outline-secondary">···</button>
+      <div class="card bg-glass border-0 shadow-sm rounded-4 overflow-hidden h-100">
+        <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-list-check text-primary me-2"></i>État par Produit (Dynamique)</h5>
+          <button class="btn btn-sm btn-light rounded-circle shadow-sm"><i class="bi bi-three-dots"></i></button>
         </div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th>Produit</th>
-                  <th>État</th>
-                  <th>Timer</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let p of products">
-                  <td>{{ p.name }}</td>
-                  <td>
-                    <span class="status-pill" [ngClass]="'sp-'+p.cls">
-                      <span class="sp-dot"></span>{{ p.state }}
-                    </span>
-                  </td>
-                  <td>
-                    <span class="timer-badge" [ngClass]="p.timerCls">{{ p.timer }}</span>
-                    <div class="timer-progress" *ngIf="p.progress !== null">
-                      <div class="timer-progress-bar" [ngClass]="p.cls" [style.width]="p.progress+'%'"></div>
+        <div class="table-responsive p-0 pb-2">
+          <table class="table table-hover align-middle mb-0 custom-table">
+            <thead class="text-muted small text-uppercase bg-light">
+              <tr>
+                <th class="ps-4">Produit</th>
+                <th>État de Détection</th>
+                <th>Chronomètre</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of demoStates">
+                <td class="ps-4 fw-bold">{{ p.name }}</td>
+                <td>
+                  <span class="badge rounded-pill px-3 py-2 border bg-{{ p.cls }} bg-opacity-10 text-{{ p.cls }} border-{{ p.cls }}">
+                    <i class="bi" [ngClass]="p.cls === 'success' ? 'bi-check-circle-fill' : p.cls === 'warning' ? 'bi-exclamation-circle-fill' : 'bi-x-circle-fill'"></i>
+                    {{ p.state }}
+                  </span>
+                </td>
+                <td style="width: 200px;">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-light text-dark border">{{ p.timer }}</span>
+                    <div class="progress flex-grow-1" style="height: 6px;" *ngIf="p.progress !== null">
+                      <div class="progress-bar bg-{{ p.cls }}" [style.width.%]="p.progress"></div>
                     </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
 
     <div class="col-lg-4">
-      <div class="timeline">
-        <div class="fw-bold text-dark mb-3 fs-7">📅 Timeline</div>
-        <div class="tl-item" *ngFor="let ev of timeline">
-          <div class="tl-dot" [style.background]="ev.color"></div>
-          <div class="tl-time">{{ ev.time }}</div>
-          <div class="tl-msg">{{ ev.msg }}<small class="d-block text-muted">{{ ev.sub }}</small></div>
+      <div class="card bg-glass border-0 shadow-sm rounded-4 h-100 p-4">
+        <h5 class="fw-bold text-dark mb-4"><i class="bi bi-clock-history text-secondary me-2"></i>Événements Récent</h5>
+        
+        <div class="timeline position-relative ps-4 mt-3">
+          <!-- Timeline Vertical Line -->
+          <div class="position-absolute h-100 border-start border-2 border-primary border-opacity-25" style="left: 6px; top: 0;"></div>
+          
+          <div class="timeline-item mb-4 position-relative" *ngFor="let ev of timeline">
+            <div class="timeline-dot position-absolute rounded-circle" [style.background-color]="ev.color" style="width: 14px; height: 14px; left: -25px; top: 4px; box-shadow: 0 0 0 3px rgba(255,255,255,0.8);"></div>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="fw-bold text-dark">{{ ev.msg }}</span>
+              <span class="text-muted small fw-bold">{{ ev.time }}</span>
+            </div>
+            <div class="text-muted small">{{ ev.sub }}</div>
+          </div>
+
         </div>
       </div>
     </div>

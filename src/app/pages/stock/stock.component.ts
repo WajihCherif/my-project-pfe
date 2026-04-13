@@ -134,21 +134,24 @@ export class StockComponent implements OnInit {
     const isEditing = 'id' in this.editingProduct;
 
     if (isEditing) {
-      this.productService.update((this.editingProduct as Product).id!, this.editingProduct).subscribe(() => {
-        this.showProductModal = false;
-        this.loadData();
+      this.productService.update((this.editingProduct as Product).id!, this.editingProduct).subscribe({
+        next: () => { this.showProductModal = false; this.loadData(); },
+        error: (err) => { this.error = 'Erreur: ' + err.message; }
       });
     } else {
-      this.productService.create(this.editingProduct as ProductCreate).subscribe(() => {
-        this.showProductModal = false;
-        this.loadData();
+      this.productService.create(this.editingProduct as ProductCreate).subscribe({
+        next: () => { this.showProductModal = false; this.loadData(); },
+        error: (err) => { this.error = 'Erreur: ' + err.message; }
       });
     }
   }
 
   deleteProduct(id: number) {
     if (confirm('Voulez-vous vraiment supprimer ce produit ?')) {
-      this.productService.delete(id).subscribe(() => this.loadData());
+      this.productService.delete(id).subscribe({
+        next: () => this.loadData(),
+        error: (err) => { this.error = 'Erreur: ' + err.message; }
+      });
     }
   }
 
@@ -163,21 +166,24 @@ export class StockComponent implements OnInit {
     const isEditing = 'id' in this.editingEtagere;
 
     if (isEditing) {
-      this.etagereService.update((this.editingEtagere as Etagere).id!, this.editingEtagere).subscribe(() => {
-        this.showEtagereModal = false;
-        this.loadData();
+      this.etagereService.update((this.editingEtagere as Etagere).id!, this.editingEtagere).subscribe({
+        next: () => { this.showEtagereModal = false; this.loadData(); },
+        error: (err) => { this.error = 'Erreur: ' + err.message; }
       });
     } else {
-      this.etagereService.create(this.editingEtagere as EtagereCreate).subscribe(() => {
-        this.showEtagereModal = false;
-        this.loadData();
+      this.etagereService.create(this.editingEtagere as EtagereCreate).subscribe({
+        next: () => { this.showEtagereModal = false; this.loadData(); },
+        error: (err) => { this.error = 'Erreur: ' + err.message; }
       });
     }
   }
 
   deleteEtagere(id: number) {
     if (confirm('Voulez-vous vraiment supprimer cette etagere ?')) {
-      this.etagereService.delete(id).subscribe(() => this.loadData());
+      this.etagereService.delete(id).subscribe({
+        next: () => this.loadData(),
+        error: (err) => { this.error = 'Erreur: ' + err.message; }
+      });
     }
   }
 
@@ -192,21 +198,24 @@ export class StockComponent implements OnInit {
     const isEditing = 'id' in this.editingDepot;
 
     if (isEditing) {
-      this.depotService.update((this.editingDepot as Depot).id!, this.editingDepot).subscribe(() => {
-        this.showDepotModal = false;
-        this.loadData();
+      this.depotService.update((this.editingDepot as Depot).id!, this.editingDepot).subscribe({
+        next: () => { this.showDepotModal = false; this.loadData(); },
+        error: (err) => { this.error = 'Erreur: ' + err.message; }
       });
     } else {
-      this.depotService.create(this.editingDepot as DepotCreate).subscribe(() => {
-        this.showDepotModal = false;
-        this.loadData();
+      this.depotService.create(this.editingDepot as DepotCreate).subscribe({
+        next: () => { this.showDepotModal = false; this.loadData(); },
+        error: (err) => { this.error = 'Erreur: ' + err.message; }
       });
     }
   }
 
   deleteDepot(id: number) {
     if (confirm('Voulez-vous vraiment supprimer ce depot ?')) {
-      this.depotService.delete(id).subscribe(() => this.loadData());
+      this.depotService.delete(id).subscribe({
+        next: () => this.loadData(),
+        error: (err) => { this.error = 'Erreur: ' + err.message; }
+      });
     }
   }
 
@@ -218,15 +227,18 @@ export class StockComponent implements OnInit {
 
   saveTransfer() {
     if (!this.editingTransfer) return;
-    this.transferService.create(this.editingTransfer as TransferCreate).subscribe(() => {
-      this.showTransferModal = false;
-      this.loadData();
+    this.transferService.create(this.editingTransfer as TransferCreate).subscribe({
+      next: () => { this.showTransferModal = false; this.loadData(); },
+      error: (err) => { this.error = 'Erreur: ' + err.message; }
     });
   }
 
   deleteTransfer(id: number) {
     if (confirm('Voulez-vous annuler ce transfert ?')) {
-      this.transferService.delete(id).subscribe(() => this.loadData());
+      this.transferService.delete(id).subscribe({
+        next: () => this.loadData(),
+        error: (err) => { this.error = 'Erreur: ' + err.message; }
+      });
     }
   }
 
