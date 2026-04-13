@@ -2,7 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService, UserResponse } from '../../services/auth.service';
+import { AuthService } from '../../core/services/auth.service';
+import { UserService } from '../../core/services/user.service';
+import { User } from '../../shared/models/user.model';
 
 @Component({
   selector: 'app-account',
@@ -12,12 +14,10 @@ import { AuthService, UserResponse } from '../../services/auth.service';
   styleUrls: ['./account.component.css']
 })
 export class AccountComponent implements OnInit {
-  currentUser: UserResponse | null = null;
-  nom = '';
-  prenom = '';
+  currentUser: User | null = null;
+  username = '';
   email = '';
   role = '';
-  telephone = '';
   mot_de_passe = '';
   error = '';
   success = '';
@@ -31,7 +31,11 @@ export class AccountComponent implements OnInit {
     { date:'21 avril, 13:45', ip:'192.168.1.23' },
   ];
 
-  constructor(private auth: AuthService, public router: Router) {}
+  constructor(
+    private auth: AuthService, 
+    private userService: UserService,
+    public router: Router
+  ) {}
 
   ngOnInit() {
     this.loadAccount();
@@ -43,48 +47,46 @@ export class AccountComponent implements OnInit {
       return;
     }
 
-    this.nom = this.currentUser.nom;
-    this.prenom = this.currentUser.prenom;
+    this.username = this.currentUser.username;
     this.email = this.currentUser.email;
-    this.telephone = this.currentUser.telephone || '';
     this.role = this.currentUser.role;
   }
 
   saveChanges() {
-    if (!this.currentUser) {
+    if (!this.currentUser || !this.currentUser.id) {
       return;
     }
 
-    const payload: Partial<{ nom: string; prenom: string; email: string; telephone: string; mot_de_passe: string; role: string }> = {
-      nom: this.nom,
-      prenom: this.prenom,
+    this.loading = true;
+
+    const payload: any = {
+      username: this.username,
       email: this.email,
-      telephone: this.telephone,
       role: this.role,
     };
 
     if (this.mot_de_passe) {
-      payload.mot_de_passe = this.mot_de_passe;
+      payload.password = this.mot_de_passe;
     }
 
-    this.auth.updateAccount(this.currentUser.id_utilisateur, payload).subscribe({
-      next: (user) => {
+    this.userService.update(this.currentUser.id, payload).subscribe({
+      next: (user: User) => {
         this.currentUser = user;
-        this.auth.setCurrentUser(user);
+        localStorage.setItem('user', JSON.stringify(user));
         this.loadAccount();
         this.mot_de_passe = '';
         this.success = 'Compte mis à jour avec succès.';
         this.loading = false;
       },
-      error: (err) => {
-        this.error = err?.error?.detail || 'Impossible de mettre à jour le compte.';
+      error: (err: any) => {
+        this.error = err?.message || 'Impossible de mettre à jour le compte.';
         this.loading = false;
       }
     });
   }
 
   deleteAccount() {
-    if (!this.currentUser || this.deleting) {
+    if (!this.currentUser || !this.currentUser.id || this.deleting) {
       return;
     }
 
@@ -96,13 +98,12 @@ export class AccountComponent implements OnInit {
     this.deleting = true;
     this.error = '';
 
-    this.auth.deleteAccount(this.currentUser.id_utilisateur).subscribe({
+    this.userService.delete(this.currentUser.id).subscribe({
       next: () => {
-        this.auth.clearCurrentUser();
-        this.router.navigate(['/login']);
+        this.auth.logout();
       },
-      error: (err) => {
-        this.error = err?.error?.detail || 'Impossible de supprimer le compte.';
+      error: (err: any) => {
+        this.error = err?.message || 'Impossible de supprimer le compte.';
         this.deleting = false;
       }
     });
@@ -115,4 +116,3 @@ export class AccountComponent implements OnInit {
     this.loadAccount();
   }
 }
-

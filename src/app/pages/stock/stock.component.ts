@@ -1,109 +1,118 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { StockService } from '../../services/stock.service';
-import { EtagereService } from '../../services/etagere.service';
-import { SalesService } from '../../services/sales.service';
-import { Stock } from '../../models/stock.model';
-import { Etagere } from '../../models/etagere.model';
+import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
+
+import { Product }  from '../../shared/models/product.model';
+import { Depot }    from '../../shared/models/depot.model';
+import { Etagere }  from '../../shared/models/etagere.model';
+import { Transfer } from '../../shared/models/transfer.model';
+import { User }     from '../../shared/models/user.model';
 
 @Component({
   selector: 'app-stock',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HttpClientModule],
   templateUrl: './stock.component.html',
   styleUrls: ['./stock.component.css']
 })
 export class StockComponent implements OnInit {
-  activeTab = 'etagere';
-  search = '';
-  tabs = [
-    { id: 'etagere', label: '🏪 Étagère (23)' },
-    { id: 'depot',   label: '📦 Dépôt (24)'   },
-    { id: 'etageres', label: '📚 Étagères' },
-    { id: 'diff',    label: '⚠️ Différence (1)' },
-  ];
 
-  stocks: Stock[] = [];
-  etageres: Etagere[] = [];
-  theftCheck: { hasTheft: boolean; message: string } | null = null;
+  private apiUrl = 'http://localhost:8000';
 
-  // For adding new items
-  newStock: Stock = { item_name: '', nb_stock: 0, nb_depot: 0, etagere_id: 1 };
-  newEtagere: Etagere = { nom_etagere: '', code: '', zone: '' };
+  products:  Product[]  = [];
+  depots:    Depot[]    = [];
+  etageres:  Etagere[]  = [];
+  users:     User[]     = [];
+  transfers: Transfer[] = [];
 
-  constructor(
-    public stockService: StockService,
-    public etagereService: EtagereService,
-    private salesService: SalesService
-  ) {}
+  searchProduct  = '';
+  searchDepot    = '';
+  searchEtagere  = '';
+  searchUser     = '';
+  searchTransfer = '';
+
+  loading = true;
+  error   = '';
+
+  constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.loadData();
-    this.checkForTheft();
-  }
+    const token   = localStorage.getItem('token') ?? '';
+    const headers = token
+      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
+      : new HttpHeaders();
 
-  loadData(): void {
-    this.stocks = this.stockService.getStocks();
-    this.etageres = this.etagereService.getEtageres();
-  }
-
-  checkForTheft(): void {
-    this.theftCheck = this.salesService.checkForTheft();
-  }
-
-  // For display, create etagere items like before
-  get etagereItems() {
-    return this.stocks.map(stock => {
-      const etagere = this.etageres.find(e => e.id === stock.etagere_id);
-      return {
-        num: stock.id?.toString().padStart(2, '0'),
-        name: stock.item_name,
-        status: stock.nb_stock > 0 ? 'ON_SHELF' : 'REMOVED',
-        cls: stock.nb_stock > 0 ? 'on' : 'rm',
-        qty: stock.nb_stock.toString(),
-        qtyColor: stock.nb_stock === 0 ? 'var(--red)' : '',
-        conf: '0.90', // placeholder
-        confColor: 'var(--green)',
-        time: new Date().toTimeString().split(' ')[0]
-      };
+    forkJoin({
+      products:  this.http.get<Product[]>(`${this.apiUrl}/products`,   { headers }),
+      depots:    this.http.get<Depot[]>(`${this.apiUrl}/depots`,       { headers }),
+      etageres:  this.http.get<Etagere[]>(`${this.apiUrl}/etageres`,   { headers }),
+      users:     this.http.get<User[]>(`${this.apiUrl}/users`,         { headers }),
+      transfers: this.http.get<Transfer[]>(`${this.apiUrl}/transfers`, { headers }),
+    }).subscribe({
+      next: (data) => {
+        this.products  = data.products;
+        this.depots    = data.depots;
+        this.etageres  = data.etageres;
+        this.users     = data.users;
+        this.transfers = data.transfers;
+        this.loading   = false;
+      },
+      error: (err) => {
+        this.error   = 'Erreur de chargement. Verifiez que le backend tourne sur localhost:8000';
+        this.loading = false;
+        console.error(err);
+      }
     });
   }
 
-  get depotItems() {
-    return this.stocks.map(stock => {
-      const etagere = this.etageres.find(e => e.id === stock.etagere_id);
-      const qtyE = stock.nb_stock; // assuming nb_stock is on shelf
-      return {
-        num: stock.id?.toString().padStart(2, '0'),
-        name: stock.item_name,
-        qtyD: stock.nb_depot.toString(),
-        qtyE: qtyE.toString(),
-        qtyEColor: qtyE === 0 ? 'var(--red)' : '',
-        status: qtyE === stock.nb_depot ? 'Complet' : 'Partiel',
-        cls: qtyE > 0 ? 'on' : 'rm'
-      };
-    });
+  get filteredProducts(): Product[] {
+    const s = this.searchProduct.toLowerCase();
+    return this.products.filter(p =>
+      JSON.stringify(p).toLowerCase().includes(s)
+    );
   }
 
-  get filteredEtagere() {
-    return this.etagereItems.filter(p => p.name.toLowerCase().includes(this.search.toLowerCase()));
+  get filteredDepots(): Depot[] {
+    const s = this.searchDepot.toLowerCase();
+    return this.depots.filter(d =>
+      JSON.stringify(d).toLowerCase().includes(s)
+    );
   }
 
-  get filteredDepot() {
-    return this.depotItems.filter(p => p.name.toLowerCase().includes(this.search.toLowerCase()));
+  get filteredEtageres(): Etagere[] {
+    const s = this.searchEtagere.toLowerCase();
+    return this.etageres.filter(e =>
+      JSON.stringify(e).toLowerCase().includes(s)
+    );
   }
 
-  addStock(): void {
-    this.stockService.addStock({ ...this.newStock });
-    this.newStock = { item_name: '', nb_stock: 0, nb_depot: 0, etagere_id: 1 };
-    this.loadData();
-    this.checkForTheft();
+  get filteredUsers(): User[] {
+    const s = this.searchUser.toLowerCase();
+    return this.users.filter(u =>
+      JSON.stringify(u).toLowerCase().includes(s)
+    );
   }
 
-  addEtagere(): void {
-    this.etagereService.addEtagere({ ...this.newEtagere });
-    this.newEtagere = { nom_etagere: '', code: '', zone: '' };
-    this.loadData();
+  get filteredTransfers(): Transfer[] {
+    const s = this.searchTransfer.toLowerCase();
+    return this.transfers.filter(t =>
+      JSON.stringify(t).toLowerCase().includes(s)
+    );
+  }
+
+  stockLevel(qty: number, max: number): string {
+    const pct = (qty / max) * 100;
+    if (pct <= 20) return 'danger';
+    if (pct <= 50) return 'warning';
+    return 'success';
+  }
+
+  stockLabel(qty: number, max: number): string {
+    const pct = (qty / max) * 100;
+    if (pct <= 20) return 'Critique';
+    if (pct <= 50) return 'Moyen';
+    return 'OK';
   }
 }

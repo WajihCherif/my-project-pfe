@@ -1,250 +1,335 @@
-<div class="container-fluid">
-  <div class="pg-title mb-3">
-    <span class="icon">📦</span> Stock
+<div class="container-fluid py-4">
+
+  <!-- HEADER -->
+  <div class="d-flex align-items-center mb-4">
+    <div class="fs-4 fw-bold me-3">Stock — Vue d'ensemble</div>
   </div>
 
-  <div class="search mb-3">
-    <span style="color:var(--text-3)">🔍</span>
-    <input type="text" class="form-control" placeholder="Rechercher produit..." [(ngModel)]="search">
-  </div>
-
-  <div class="row g-3 mb-3">
-    <div class="col-md-4">
-      <div class="card text-center" style="background:var(--green-bg);border:1px solid var(--green-border);box-shadow:var(--shadow)">
+  <!-- KPI CARDS -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card text-center border-primary">
         <div class="card-body">
-          <div class="text-uppercase fw-bold text-success small mb-2" style="letter-spacing:.5px">Produits Étagère</div>
-          <div class="display-4 fw-bold text-success font-monospace">{{ stockService.getTotalStock() }}</div>
-          <div class="text-muted small">Détectés par YOLO</div>
+          <div class="text-primary fw-bold">PRODUITS</div>
+          <div class="fs-2 fw-bold text-primary">{{ products.length }}</div>
+          <div class="text-muted small">Total catalogue</div>
         </div>
       </div>
     </div>
-    <div class="col-md-4">
-      <div class="card text-center" style="background:var(--blue-bg);border:1px solid rgba(37,99,235,0.2);box-shadow:var(--shadow)">
+    <div class="col-md-3">
+      <div class="card text-center border-warning">
         <div class="card-body">
-          <div class="text-uppercase fw-bold text-primary small mb-2" style="letter-spacing:.5px">Produits Dépôt</div>
-          <div class="display-4 fw-bold text-primary font-monospace">{{ stockService.getTotalDepot() }}</div>
-          <div class="text-muted small">Inventaire total</div>
+          <div class="text-warning fw-bold">ETAGERES</div>
+          <div class="fs-2 fw-bold text-warning">{{ etageres.length }}</div>
+          <div class="text-muted small">En rayon</div>
         </div>
       </div>
     </div>
-    <div class="col-md-4">
-      <div class="card text-center" [style.background]="theftCheck?.hasTheft ? 'var(--red-bg)' : 'var(--green-bg)'" [style.border]="theftCheck?.hasTheft ? '1px solid rgba(214,59,59,0.2)' : '1px solid var(--green-border)'" style="box-shadow:var(--shadow)">
+    <div class="col-md-3">
+      <div class="card text-center border-success">
         <div class="card-body">
-          <div class="text-uppercase fw-bold small mb-2" [style.color]="theftCheck?.hasTheft ? 'var(--red)' : 'var(--green)'" style="letter-spacing:.5px">Vérification</div>
-          <div class="display-4 fw-bold font-monospace" [style.color]="theftCheck?.hasTheft ? 'var(--red)' : 'var(--green)'">{{ theftCheck?.hasTheft ? '⚠️' : '✅' }}</div>
-          <div class="text-muted small">{{ theftCheck?.message }}</div>
+          <div class="text-success fw-bold">DEPOTS</div>
+          <div class="fs-2 fw-bold text-success">{{ depots.length }}</div>
+          <div class="text-muted small">Sites de stockage</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center border-danger">
+        <div class="card-body">
+          <div class="text-danger fw-bold">TRANSFERTS</div>
+          <div class="fs-2 fw-bold text-danger">{{ transfers.length }}</div>
+          <div class="text-muted small">Mouvements stock</div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="stock-tabs mb-3">
-    <button class="btn btn-outline-primary me-2" *ngFor="let t of tabs" [class.active]="activeTab===t.id" (click)="activeTab=t.id">{{ t.label }}</button>
-  </div>
+  <!-- LOADING -->
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" style="width:3rem;height:3rem"></div>
+      <p class="mt-3 text-muted">Chargement des donnees...</p>
+    </div>
+  }
 
-  <!-- Étagère -->
-  <div *ngIf="activeTab==='etagere'" class="card">
-    <div class="card-header">
-      <span class="card-title">🏪 Produits sur l'Étagère</span>
-      <span class="badge bg-success ms-2">● YOLO temps réel</span>
+  <!-- ERROR -->
+  @if (error) {
+    <div class="alert alert-danger">
+      <strong>Erreur :</strong> {{ error }}
     </div>
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-hover mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>#</th>
-              <th>Produit</th>
-              <th>État</th>
-              <th>Qté</th>
-              <th>Conf.</th>
-              <th>Détection</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let p of filteredEtagere">
-              <td class="text-muted small">{{ p.num }}</td>
-              <td>{{ p.name }}</td>
-              <td><span class="badge" [ngClass]="p.cls"><span class="ch-dot"></span>{{ p.status }}</span></td>
-              <td class="font-monospace fw-bold" [style.color]="p.qtyColor">{{ p.qty }}</td>
-              <td class="font-monospace small" [style.color]="p.confColor">{{ p.conf }}</td>
-              <td class="text-muted small">{{ p.time }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+  }
 
-  <!-- Dépôt -->
-  <div *ngIf="activeTab==='depot'" class="card">
-    <div class="card-header">
-      <span class="card-title">📦 Produits en Dépôt</span>
-      <span class="badge bg-primary ms-2">Inventaire initial</span>
-      <button class="btn btn-sm btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#addStockModal">Ajouter Stock</button>
-    </div>
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-hover mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>#</th>
-              <th>Produit</th>
-              <th>Qté Dépôt</th>
-              <th>Qté Étagère</th>
-              <th>Statut</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let p of filteredDepot">
-              <td class="text-muted small">{{ p.num }}</td>
-              <td>{{ p.name }}</td>
-              <td class="font-monospace fw-bold text-primary">{{ p.qtyD }}</td>
-              <td class="font-monospace" [style.color]="p.qtyEColor">{{ p.qtyE }}</td>
-              <td><span class="badge" [ngClass]="p.cls"><span class="ch-dot"></span>{{ p.status }}</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+  @if (!loading && !error) {
 
-  <!-- Étagères -->
-  <div *ngIf="activeTab==='etageres'" class="card">
-    <div class="card-header">
-      <span class="card-title">📚 Gestion des Étagères</span>
-      <button class="btn btn-sm btn-success ms-auto" data-bs-toggle="modal" data-bs-target="#addEtagereModal">Ajouter Étagère</button>
-    </div>
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-hover mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>#</th>
-              <th>Nom Étagère</th>
-              <th>Code</th>
-              <th>Zone</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let e of etageres">
-              <td class="text-muted small">{{ e.id }}</td>
-              <td>{{ e.nom_etagere }}</td>
-              <td class="font-monospace">{{ e.code }}</td>
-              <td>{{ e.zone }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+    <!-- ROW 1 : PRODUITS + ETAGERES -->
+    <div class="row g-4 mb-4">
 
-  <!-- Différence -->
-  <div *ngIf="activeTab==='diff'" class="card">
-    <div class="card-header">
-      <span class="card-title">⚠️ Différence Dépôt / Étagère</span>
-      <span class="badge bg-danger ms-2">Produits avec écart</span>
-    </div>
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-hover mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>Produit</th>
-              <th>Qté Dépôt</th>
-              <th>Qté Étagère</th>
-              <th>Écart</th>
-              <th>Statut</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Boîte de conserve Heinz 400g</td>
-              <td class="font-monospace fw-bold">10</td>
-              <td class="font-monospace text-warning">—</td>
-              <td class="font-monospace fw-bold text-warning">Temp.</td>
-              <td><span class="badge bg-warning text-dark">⚠️ Temporairement enlevé</span></td>
-            </tr>
-            <tr>
-              <td>Snack sucré Kinder Bueno</td>
-              <td class="font-monospace fw-bold">22</td>
-              <td class="font-monospace text-danger">0</td>
-              <td class="font-monospace fw-bold text-danger">-22</td>
-              <td><span class="badge bg-danger">🔴 Retiré Confirmé</span></td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- TABLE PRODUITS -->
+      <div class="col-lg-6">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Produits</h5>
+            <span class="badge bg-primary">{{ filteredProducts.length }}</span>
+          </div>
+          <div class="card-body p-2">
+            <input class="form-control form-control-sm mb-2"
+                   placeholder="Rechercher un produit..."
+                   [(ngModel)]="searchProduct">
+            <div class="table-responsive" style="max-height:320px;overflow-y:auto">
+              <table class="table table-hover table-sm mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>#</th>
+                    <th>Code</th>
+                    <th>Nom</th>
+                    <th>Categorie</th>
+                    <th>Prix</th>
+                    <th>Unite</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (p of filteredProducts; track p.id) {
+                    <tr>
+                      <td><span class="badge bg-light text-dark">{{ p.id }}</span></td>
+                      <td><code>{{ p.product_code }}</code></td>
+                      <td><strong>{{ p.name }}</strong></td>
+                      <td>
+                        <span class="badge bg-light text-dark">
+                          {{ p.category ? p.category : '-' }}
+                        </span>
+                      </td>
+                      <td class="text-success fw-bold">
+                        {{ p.price | number:'1.2-2' }}
+                      </td>
+                      <td>{{ p.unit }}</td>
+                    </tr>
+                  }
+                  @if (filteredProducts.length === 0) {
+                    <tr>
+                      <td colspan="6" class="text-center text-muted py-3">
+                        Aucun produit trouve
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</div>
 
-<!-- Modal for adding Stock -->
-<div class="modal fade" id="addStockModal" tabindex="-1" aria-labelledby="addStockModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="addStockModalLabel">Ajouter un Stock</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <!-- TABLE ETAGERES -->
+      <div class="col-lg-6">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Etageres</h5>
+            <span class="badge bg-warning text-dark">{{ filteredEtageres.length }}</span>
+          </div>
+          <div class="card-body p-2">
+            <input class="form-control form-control-sm mb-2"
+                   placeholder="Rechercher une etagere..."
+                   [(ngModel)]="searchEtagere">
+            <div class="table-responsive" style="max-height:320px;overflow-y:auto">
+              <table class="table table-hover table-sm mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>#</th>
+                    <th>Code</th>
+                    <th>Nom</th>
+                    <th>Quantite</th>
+                    <th>Capacite</th>
+                    <th>Niveau</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (e of filteredEtageres; track e.id) {
+                    <tr>
+                      <td><span class="badge bg-light text-dark">{{ e.id }}</span></td>
+                      <td><code>{{ e.etagere_code }}</code></td>
+                      <td><strong>{{ e.name }}</strong></td>
+                      <td><strong>{{ e.quantity }}</strong></td>
+                      <td>{{ e.max_capacity }}</td>
+                      <td>
+                        
+                      </td>
+                    </tr>
+                  }
+                  @if (filteredEtageres.length === 0) {
+                    <tr>
+                      <td colspan="6" class="text-center text-muted py-3">
+                        Aucune etagere trouvee
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="modal-body">
-        <form>
-          <div class="mb-3">
-            <label for="itemName" class="form-label">Nom du Produit</label>
-            <input type="text" class="form-control" id="itemName" [(ngModel)]="newStock.item_name" name="itemName">
-          </div>
-          <div class="mb-3">
-            <label for="nbStock" class="form-label">Nombre de Stock</label>
-            <input type="number" class="form-control" id="nbStock" [(ngModel)]="newStock.nb_stock" name="nbStock">
-          </div>
-          <div class="mb-3">
-            <label for="nbDepot" class="form-label">Nombre de Dépôt</label>
-            <input type="number" class="form-control" id="nbDepot" [(ngModel)]="newStock.nb_depot" name="nbDepot">
-          </div>
-          <div class="mb-3">
-            <label for="etagereId" class="form-label">ID Étagère</label>
-            <select class="form-control" id="etagereId" [(ngModel)]="newStock.etagere_id" name="etagereId">
-              <option *ngFor="let e of etageres" [value]="e.id">{{ e.nom_etagere }}</option>
-            </select>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-        <button type="button" class="btn btn-primary" (click)="addStock()" data-bs-dismiss="modal">Ajouter</button>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- Modal for adding Etagere -->
-<div class="modal fade" id="addEtagereModal" tabindex="-1" aria-labelledby="addEtagereModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="addEtagereModalLabel">Ajouter une Étagère</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div
+    
+
+    <!-- ROW 2 : DEPOTS + TRANSFERTS -->
+    <div class="row g-4 mb-4">
+
+      <!-- TABLE DEPOTS -->
+      <div class="col-lg-6">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Depots</h5>
+            <span class="badge bg-success">{{ filteredDepots.length }}</span>
+          </div>
+          <div class="card-body p-2">
+            <input class="form-control form-control-sm mb-2"
+                   placeholder="Rechercher un depot..."
+                   [(ngModel)]="searchDepot">
+            <div class="table-responsive" style="max-height:320px;overflow-y:auto">
+              <table class="table table-hover table-sm mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>#</th>
+                    <th>Code</th>
+                    <th>Nom</th>
+                    <th>Localisation</th>
+                    <th>Manager</th>
+                    <th>Tel</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (d of filteredDepots; track d.id) {
+                    <tr>
+                      <td><span class="badge bg-light text-dark">{{ d.id }}</span></td>
+                      <td><code>{{ d.depot_code }}</code></td>
+                      <td><strong>{{ d.name }}</strong></td>
+                      <td>{{ d.location ? d.location : '-' }}</td>
+                      <td>{{ d.manager_name ? d.manager_name : '-' }}</td>
+                      <td>{{ d.phone ? d.phone : '-' }}</td>
+                    </tr>
+                  }
+                  @if (filteredDepots.length === 0) {
+                    <tr>
+                      <td colspan="6" class="text-center text-muted py-3">
+                        Aucun depot trouve
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="modal-body">
-        <form>
-          <div class="mb-3">
-            <label for="nomEtagere" class="form-label">Nom de l'Étagère</label>
-            <input type="text" class="form-control" id="nomEtagere" [(ngModel)]="newEtagere.nom_etagere" name="nomEtagere">
+
+      <!-- TABLE TRANSFERTS -->
+      <div class="col-lg-6">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Transferts</h5>
+            <span class="badge bg-danger">{{ filteredTransfers.length }}</span>
           </div>
-          <div class="mb-3">
-            <label for="code" class="form-label">Code</label>
-            <input type="text" class="form-control" id="code" [(ngModel)]="newEtagere.code" name="code">
+          <div class="card-body p-2">
+            <input class="form-control form-control-sm mb-2"
+                   placeholder="Rechercher un transfert..."
+                   [(ngModel)]="searchTransfer">
+            <div class="table-responsive" style="max-height:320px;overflow-y:auto">
+              <table class="table table-hover table-sm mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>#</th>
+                    <th>Produit</th>
+                    <th>De</th>
+                    <th>Vers</th>
+                    <th>Qte</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (t of filteredTransfers; track t.id) {
+                    <tr>
+                      <td><span class="badge bg-light text-dark">{{ t.id }}</span></td>
+                      <td><span class="badge bg-primary">P{{ t.product_id }}</span></td>
+                      <td><code class="text-danger">E{{ t.from_etagere_id }}</code></td>
+                      <td><code class="text-success">E{{ t.to_etagere_id }}</code></td>
+                      <td><strong>{{ t.quantity }}</strong></td>
+                      <td><small>{{ t.transfer_date | date:'dd/MM/yy' }}</small></td>
+                    </tr>
+                  }
+                  @if (filteredTransfers.length === 0) {
+                    <tr>
+                      <td colspan="6" class="text-center text-muted py-3">
+                        Aucun transfert trouve
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div class="mb-3">
-            <label for="zone" class="form-label">Zone</label>
-            <input type="text" class="form-control" id="zone" [(ngModel)]="newEtagere.zone" name="zone">
-          </div>
-        </form>
+        </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-        <button type="button" class="btn btn-success" (click)="addEtagere()" data-bs-dismiss="modal">Ajouter</button>
+
+    </div>
+
+    <!-- ROW 3 : UTILISATEURS pleine largeur -->
+    <div class="row g-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Utilisateurs</h5>
+            <span class="badge bg-secondary">{{ filteredUsers.length }}</span>
+          </div>
+          <div class="card-body p-2">
+            <input class="form-control form-control-sm mb-2"
+                   placeholder="Rechercher un utilisateur..."
+                   [(ngModel)]="searchUser">
+            <div class="table-responsive">
+              <table class="table table-hover table-sm mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>#</th>
+                    <th>Username</th>
+                    <th>Nom complet</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (u of filteredUsers; track u.id) {
+                    <tr>
+                      <td><span class="badge bg-light text-dark">{{ u.id }}</span></td>
+                      <td><strong>{{ u.username }}</strong></td>
+                      
+                      <td><small class="text-muted">{{ u.email }}</small></td>
+                      <td>
+                        <span class="badge"
+                              [ngClass]="u.role === 'admin' ? 'bg-danger' : 'bg-secondary'">
+                          {{ u.role }}
+                        </span>
+                      </td>
+                      <td>
+                       
+                      </td>
+                    </tr>
+                  }
+                  @if (filteredUsers.length === 0) {
+                    <tr>
+                      <td colspan="6" class="text-center text-muted py-3">
+                        Aucun utilisateur trouve
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+
+  }
+
 </div>

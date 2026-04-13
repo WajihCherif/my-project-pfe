@@ -1,36 +1,49 @@
-<div class="container-fluid">
-  <div class="pg-title mb-3">
-    <span class="icon">🔔</span> Alertes
+<div class="container-fluid py-4">
+  <div class="d-flex align-items-center mb-4">
+    <div class="fs-4 fw-bold me-3">🔔 Alertes</div>
   </div>
 
-  <div class="d-flex align-items-center justify-content-between mb-3">
+  <div class="d-flex align-items-center justify-content-between mb-4">
     <div class="d-flex align-items-center gap-3">
       <span class="fw-bold fs-6">Alertes Actives</span>
-      <span class="badge bg-warning text-dark">{{ alerts.length }} alertes</span>
+      <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm">{{ alerts.length }} alertes</span>
     </div>
-    <div class="d-flex gap-2">
-      <select class="form-select">
+    <div class="d-flex gap-3">
+      <select class="form-select border-0 shadow-sm rounded-3">
         <option>Toutes</option>
         <option>Critiques</option>
         <option>Warnings</option>
       </select>
-      <select class="form-select">
+      <select class="form-select border-0 shadow-sm rounded-3">
         <option>Aujourd'hui</option>
         <option>Cette semaine</option>
       </select>
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-body p-0">
-      <div class="alert-row" *ngFor="let al of alerts">
-        <div class="al-icon" [class.red]="al.critical">{{ al.icon }}</div>
-        <div class="al-sep"></div>
-        <div class="al-msg">
-          <strong>{{ al.title }}</strong>
-          <small class="text-muted d-block">{{ al.sub }}</small>
+  <div class="row">
+    <div class="col-12">
+      <div class="alert-list">
+        <div class="alert-card shadow-sm" *ngFor="let al of alerts" [class.critical-alert]="al.critical">
+          <div class="d-flex align-items-center p-3">
+            <div class="al-icon-wrap" [class.bg-danger-subtle]="al.critical" [class.bg-warning-subtle]="!al.critical">
+              <span class="al-icon">{{ al.icon }}</span>
+            </div>
+            <div class="al-body ms-4 flex-grow-1">
+              <h6 class="mb-1 fw-bold" [class.text-danger]="al.critical">{{ al.title }}</h6>
+              <p class="mb-0 text-muted small">{{ al.sub }}</p>
+            </div>
+            <div class="al-actions text-end d-flex flex-column align-items-end justify-content-center">
+              <span class="al-time text-muted small mb-2 d-inline-block">{{ al.time }}</span>
+              <button class="btn btn-sm btn-outline-secondary rounded-pill" (click)="dismissAlert(al.id)">Ignorer</button>
+            </div>
+          </div>
         </div>
-        <div class="al-time text-muted">{{ al.time }}</div>
+        <div *ngIf="alerts.length === 0" class="text-center text-muted p-5 bg-light rounded-4 border border-dashed">
+          <div class="fs-1 mb-3">🎉</div>
+          <h5>Aucune alerte active</h5>
+          <p>Tout fonctionne parfaitement.</p>
+        </div>
       </div>
     </div>
   </div>

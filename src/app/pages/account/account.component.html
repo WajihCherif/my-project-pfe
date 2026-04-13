@@ -24,32 +24,24 @@
         <div class="d-flex flex-column flex-lg-row gap-4">
           <div class="profile-summary text-center text-lg-start">
             <div class="avatar mb-3">👤</div>
-            <div class="fs-5 fw-bold">{{ currentUser.nom }} {{ currentUser.prenom }}</div>
+            <div class="fs-5 fw-bold">{{ currentUser.username }}</div>
             <div class="badge bg-primary-subtle text-primary mt-2">{{ currentUser.role }}</div>
           </div>
           <div class="flex-fill">
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="form-label">Nom</label>
-                <input class="form-control" [(ngModel)]="nom" name="nom" required />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Prénom</label>
-                <input class="form-control" [(ngModel)]="prenom" name="prenom" required />
+                <label class="form-label">Nom d'utilisateur</label>
+                <input class="form-control" [(ngModel)]="username" name="username" required />
               </div>
               <div class="col-md-6">
                 <label class="form-label">Email</label>
                 <input class="form-control" type="email" [(ngModel)]="email" name="email" required />
               </div>
               <div class="col-md-6">
-                <label class="form-label">Téléphone</label>
-                <input class="form-control" type="tel" [(ngModel)]="telephone" name="telephone" placeholder="+216 XX XXX XXX" />
-              </div>
-              <div class="col-md-6">
                 <label class="form-label">Rôle</label>
                 <input class="form-control" [(ngModel)]="role" name="role" readonly />
               </div>
-              <div class="col-12">
+              <div class="col-md-6">
                 <label class="form-label">Mot de passe (optionnel)</label>
                 <input class="form-control" type="password" [(ngModel)]="mot_de_passe" name="mot_de_passe" />
               </div>
