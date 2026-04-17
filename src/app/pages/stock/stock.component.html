@@ -114,7 +114,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="row mt-4">
         <div class="col-12">
           <div class="card border-0 shadow-sm rounded-4 text-center p-5 bg-glass">
@@ -137,7 +137,8 @@
           <div class="d-flex gap-2">
             <div class="search-box">
               <i class="bi bi-search"></i>
-              <input class="form-control rounded-pill border-0 bg-light px-4" placeholder="Rechercher..." [(ngModel)]="searchProduct">
+              <input class="form-control rounded-pill border-0 bg-light px-4" placeholder="Rechercher..."
+                [(ngModel)]="searchProduct">
             </div>
             <button class="btn btn-primary rounded-pill shadow-sm px-4" (click)="openProductModal()">
               <i class="bi bi-plus-lg me-2"></i>Nouveau
@@ -164,8 +165,10 @@
                 <td class="text-success fw-bold">{{ p.price | number:'1.2-2' }} TND</td>
                 <td class="text-muted">{{ p.unit }}</td>
                 <td class="text-end">
-                  <button class="btn btn-sm btn-light rounded-circle me-2 action-btn" (click)="openProductModal(p)"><i class="bi bi-pencil-fill text-primary"></i></button>
-                  <button class="btn btn-sm btn-light rounded-circle action-btn" (click)="deleteProduct(p.id!)"><i class="bi bi-trash-fill text-danger"></i></button>
+                  <button class="btn btn-sm btn-light rounded-circle me-2 action-btn" (click)="openProductModal(p)"><i
+                      class="bi bi-pencil-fill text-primary"></i></button>
+                  <button class="btn btn-sm btn-light rounded-circle action-btn" (click)="deleteProduct(p.id!)"><i
+                      class="bi bi-trash-fill text-danger"></i></button>
                 </td>
               </tr>
               <tr *ngIf="filteredProducts.length === 0">
@@ -185,8 +188,10 @@
             <h5 class="mb-0 fw-bold">Gestion des Étagères</h5>
           </div>
           <div class="d-flex gap-2">
-            <input class="form-control rounded-pill border-0 bg-light" placeholder="Rechercher..." [(ngModel)]="searchEtagere">
-            <button class="btn btn-warning text-dark fw-bold rounded-pill shadow-sm px-4 text-nowrap" (click)="openEtagereModal()">
+            <input class="form-control rounded-pill border-0 bg-light" placeholder="Rechercher..."
+              [(ngModel)]="searchEtagere">
+            <button class="btn btn-warning text-dark fw-bold rounded-pill shadow-sm px-4 text-nowrap"
+              (click)="openEtagereModal()">
               <i class="bi bi-plus-lg me-2"></i>Nouvelle Étagère
             </button>
           </div>
@@ -210,21 +215,25 @@
                 <td><span class="badge bg-secondary">Dépôt #{{ e.depot_id }}</span></td>
                 <td>
                   <div class="d-flex align-items-center gap-2">
-                    <span class="fw-bold">{{ e.quantity || 0 }}</span> / <span class="text-muted">{{ e.max_capacity || 0 }}</span>
+                    <span class="fw-bold">{{ e.quantity || 0 }}</span> / <span class="text-muted">{{ e.max_capacity || 0
+                      }}</span>
                     <div class="progress flex-grow-1" style="height: 6px; width: 60px;">
-                      <div class="progress-bar bg-{{ stockLevel(e.quantity || 0, e.max_capacity || 0) }}" 
-                           [style.width.%]="((e.quantity || 0) / (e.max_capacity || 1)) * 100"></div>
+                      <div class="progress-bar bg-{{ stockLevel(e.quantity || 0, e.max_capacity || 0) }}"
+                        [style.width.%]="((e.quantity || 0) / (e.max_capacity || 1)) * 100"></div>
                     </div>
                   </div>
                 </td>
                 <td>
-                  <span class="badge bg-{{ stockLevel(e.quantity || 0, e.max_capacity || 0) }} bg-opacity-25 text-{{ stockLevel(e.quantity || 0, e.max_capacity || 0) }} border-0 px-3 py-2 rounded-pill">
+                  <span
+                    class="badge bg-{{ stockLevel(e.quantity || 0, e.max_capacity || 0) }} bg-opacity-25 text-{{ stockLevel(e.quantity || 0, e.max_capacity || 0) }} border-0 px-3 py-2 rounded-pill">
                     {{ stockLabel(e.quantity || 0, e.max_capacity || 0) }}
                   </span>
                 </td>
                 <td class="text-end">
-                  <button class="btn btn-sm btn-light rounded-circle me-2 action-btn" (click)="openEtagereModal(e)"><i class="bi bi-pencil-fill text-warning"></i></button>
-                  <button class="btn btn-sm btn-light rounded-circle action-btn" (click)="deleteEtagere(e.id!)"><i class="bi bi-trash-fill text-danger"></i></button>
+                  <button class="btn btn-sm btn-light rounded-circle me-2 action-btn" (click)="openEtagereModal(e)"><i
+                      class="bi bi-pencil-fill text-warning"></i></button>
+                  <button class="btn btn-sm btn-light rounded-circle action-btn" (click)="deleteEtagere(e.id!)"><i
+                      class="bi bi-trash-fill text-danger"></i></button>
                 </td>
               </tr>
             </tbody>
@@ -239,7 +248,8 @@
         <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
           <h5 class="mb-0 fw-bold">Centres de Stockage (Dépôts)</h5>
           <div class="d-flex gap-2">
-            <input class="form-control rounded-pill border-0 bg-light" placeholder="Rechercher..." [(ngModel)]="searchDepot">
+            <input class="form-control rounded-pill border-0 bg-light" placeholder="Rechercher..."
+              [(ngModel)]="searchDepot">
             <button class="btn btn-success fw-bold rounded-pill shadow-sm px-4 text-nowrap" (click)="openDepotModal()">
               <i class="bi bi-plus-lg me-2"></i>Nouveau Dépôt
             </button>
@@ -258,20 +268,26 @@
             </thead>
             <tbody>
               <tr *ngFor="let d of filteredDepots">
-                <td><span class="badge bg-success bg-opacity-10 text-success border border-success">{{ d.depot_code }}</span></td>
+                <td><span class="badge bg-success bg-opacity-10 text-success border border-success">{{ d.depot_code
+                    }}</span></td>
                 <td class="fw-bold">{{ d.name }}</td>
-                <td class="text-muted"><i class="bi bi-geo-alt me-1"></i>{{ d.location || d.address || 'Non spécifié' }}</td>
+                <td class="text-muted"><i class="bi bi-geo-alt me-1"></i>{{ d.location || d.address || 'Non spécifié' }}
+                </td>
                 <td>
                   <div class="d-flex align-items-center">
-                    <div class="avatar bg-light text-secondary rounded-circle me-2 d-flex justify-content-center align-items-center" style="width:30px; height:30px;">
+                    <div
+                      class="avatar bg-light text-secondary rounded-circle me-2 d-flex justify-content-center align-items-center"
+                      style="width:30px; height:30px;">
                       <i class="bi bi-person"></i>
                     </div>
                     {{ d.manager_name || 'Aucun' }}
                   </div>
                 </td>
                 <td class="text-end">
-                  <button class="btn btn-sm btn-light rounded-circle me-2 action-btn" (click)="openDepotModal(d)"><i class="bi bi-pencil-fill text-success"></i></button>
-                  <button class="btn btn-sm btn-light rounded-circle action-btn" (click)="deleteDepot(d.id!)"><i class="bi bi-trash-fill text-danger"></i></button>
+                  <button class="btn btn-sm btn-light rounded-circle me-2 action-btn" (click)="openDepotModal(d)"><i
+                      class="bi bi-pencil-fill text-success"></i></button>
+                  <button class="btn btn-sm btn-light rounded-circle action-btn" (click)="deleteDepot(d.id!)"><i
+                      class="bi bi-trash-fill text-danger"></i></button>
                 </td>
               </tr>
             </tbody>
@@ -286,8 +302,10 @@
         <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
           <h5 class="mb-0 fw-bold">Historique des Transferts</h5>
           <div class="d-flex gap-2">
-            <input class="form-control rounded-pill border-0 bg-light" placeholder="Rechercher..." [(ngModel)]="searchTransfer">
-            <button class="btn btn-danger text-white fw-bold rounded-pill shadow-sm px-4 text-nowrap" (click)="openTransferModal()">
+            <input class="form-control rounded-pill border-0 bg-light" placeholder="Rechercher..."
+              [(ngModel)]="searchTransfer">
+            <button class="btn btn-danger text-white fw-bold rounded-pill shadow-sm px-4 text-nowrap"
+              (click)="openTransferModal()">
               <i class="bi bi-arrow-left-right me-2"></i>Nouveau Mouvement
             </button>
           </div>
@@ -312,9 +330,11 @@
                   <span class="badge bg-success">Étagère #{{ t.to_etagere_id }}</span>
                 </td>
                 <td><span class="fw-bold fs-5 text-danger">{{ t.quantity }}</span></td>
-                <td class="text-muted small"><i class="bi bi-calendar3 me-2"></i>{{ t.transfer_date | date:'short' }}</td>
+                <td class="text-muted small"><i class="bi bi-calendar3 me-2"></i>{{ t.transfer_date | date:'short' }}
+                </td>
                 <td class="text-end">
-                  <button class="btn btn-sm btn-light rounded-circle action-btn" (click)="deleteTransfer(t.id!)"><i class="bi bi-x-circle-fill text-danger"></i></button>
+                  <button class="btn btn-sm btn-light rounded-circle action-btn" (click)="deleteTransfer(t.id!)"><i
+                      class="bi bi-x-circle-fill text-danger"></i></button>
                 </td>
               </tr>
             </tbody>
@@ -343,7 +363,9 @@
               <tr *ngFor="let u of filteredUsers">
                 <td>
                   <div class="d-flex align-items-center">
-                    <div class="avatar bg-gradient-primary text-white rounded-circle me-3 d-flex justify-content-center align-items-center fw-bold" style="width:40px; height:40px;">
+                    <div
+                      class="avatar bg-gradient-primary text-white rounded-circle me-3 d-flex justify-content-center align-items-center fw-bold"
+                      style="width:40px; height:40px;">
                       {{ u.username.charAt(0).toUpperCase() }}
                     </div>
                     <div>
@@ -354,8 +376,10 @@
                 </td>
                 <td>{{ u.email }}</td>
                 <td>
-                  <span class="badge rounded-pill border px-3 py-2" [ngClass]="u.role === 'admin' ? 'border-danger text-danger bg-danger bg-opacity-10' : 'border-secondary text-secondary bg-light'">
-                    <i class="bi" [ngClass]="u.role === 'admin' ? 'bi-shield-lock-fill' : 'bi-person-fill'"></i> {{ u.role }}
+                  <span class="badge rounded-pill border px-3 py-2"
+                    [ngClass]="u.role === 'admin' ? 'border-danger text-danger bg-danger bg-opacity-10' : 'border-secondary text-secondary bg-light'">
+                    <i class="bi" [ngClass]="u.role === 'admin' ? 'bi-shield-lock-fill' : 'bi-person-fill'"></i> {{
+                    u.role }}
                   </span>
                 </td>
                 <td>
@@ -375,15 +399,17 @@
 
 <!-- ==================== MODALS INLINE IMPLEMENTATION ==================== -->
 <!-- To avoid reliance on external JS, we use pure CSS & Angular styling for Modals -->
-<div class="custom-modal-backdrop" *ngIf="showProductModal || showEtagereModal || showDepotModal || showTransferModal"></div>
+<div class="custom-modal-backdrop" *ngIf="showProductModal || showEtagereModal || showDepotModal || showTransferModal">
+</div>
 
 <!-- PRODUCT MODAL -->
-<div class="modal custom-modal" tabindex="-1" [class.show]="showProductModal" [style.display]="showProductModal ? 'block' : 'none'">
+<div class="modal custom-modal" tabindex="-1" [class.show]="showProductModal"
+  [style.display]="showProductModal ? 'block' : 'none'">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
       <div class="modal-header bg-light border-0 py-3">
         <h5 class="modal-title fw-bold text-primary">
-          <i class="bi" [ngClass]="editingProduct?.id ? 'bi-pencil-square' : 'bi-plus-circle'"></i> 
+          <i class="bi" [ngClass]="editingProduct?.id ? 'bi-pencil-square' : 'bi-plus-circle'"></i>
           {{ editingProduct?.id ? 'Modifier le Produit' : 'Ajouter un Produit' }}
         </h5>
         <button type="button" class="btn-close" (click)="showProductModal = false"></button>
@@ -392,7 +418,8 @@
         <div class="row g-3">
           <div class="col-6">
             <label class="form-label text-muted small fw-bold">Code Produit*</label>
-            <input type="text" class="form-control rounded-3 bg-light border-0" [(ngModel)]="editingProduct.product_code" [disabled]="!!editingProduct?.['id']">
+            <input type="text" class="form-control rounded-3 bg-light border-0"
+              [(ngModel)]="editingProduct.product_code" [disabled]="!!editingProduct?.['id']">
           </div>
           <div class="col-6">
             <label class="form-label text-muted small fw-bold">Nom*</label>
@@ -413,26 +440,31 @@
         </div>
       </div>
       <div class="modal-footer border-0 bg-light py-3">
-        <button type="button" class="btn btn-white text-muted fw-bold rounded-pill px-4" (click)="showProductModal = false">Annuler</button>
-        <button type="button" class="btn btn-primary fw-bold rounded-pill shadow-sm px-4" (click)="saveProduct()">Enregistrer</button>
+        <button type="button" class="btn btn-white text-muted fw-bold rounded-pill px-4"
+          (click)="showProductModal = false">Annuler</button>
+        <button type="button" class="btn btn-primary fw-bold rounded-pill shadow-sm px-4"
+          (click)="saveProduct()">Enregistrer</button>
       </div>
     </div>
   </div>
 </div>
 
 <!-- ETAGERE MODAL -->
-<div class="modal custom-modal" tabindex="-1" [class.show]="showEtagereModal" [style.display]="showEtagereModal ? 'block' : 'none'">
+<div class="modal custom-modal" tabindex="-1" [class.show]="showEtagereModal"
+  [style.display]="showEtagereModal ? 'block' : 'none'">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
       <div class="modal-header bg-light border-0 py-3">
-        <h5 class="modal-title fw-bold text-warning text-dark"><i class="bi bi-bookshelf me-2"></i>{{ editingEtagere?.id ? 'Modifier L\'Étagère' : 'Nouvelle Étagère' }}</h5>
+        <h5 class="modal-title fw-bold text-warning text-dark"><i class="bi bi-bookshelf me-2"></i>{{ editingEtagere?.id
+          ? 'Modifier L\'Étagère' : 'Nouvelle Étagère' }}</h5>
         <button type="button" class="btn-close" (click)="showEtagereModal = false"></button>
       </div>
       <div class="modal-body px-4 py-4" *ngIf="editingEtagere">
         <div class="row g-3">
           <div class="col-6">
             <label class="form-label text-muted small fw-bold">Code Étagère*</label>
-            <input type="text" class="form-control rounded-3 bg-light border-0" [(ngModel)]="editingEtagere.etagere_code">
+            <input type="text" class="form-control rounded-3 bg-light border-0"
+              [(ngModel)]="editingEtagere.etagere_code">
           </div>
           <div class="col-6">
             <label class="form-label text-muted small fw-bold">Nom (Section)*</label>
@@ -455,19 +487,23 @@
         </div>
       </div>
       <div class="modal-footer border-0 bg-light py-3">
-        <button type="button" class="btn btn-white text-muted fw-bold rounded-pill px-4" (click)="showEtagereModal = false">Annuler</button>
-        <button type="button" class="btn btn-warning fw-bold rounded-pill shadow-sm px-4" (click)="saveEtagere()">Confirmer</button>
+        <button type="button" class="btn btn-white text-muted fw-bold rounded-pill px-4"
+          (click)="showEtagereModal = false">Annuler</button>
+        <button type="button" class="btn btn-warning fw-bold rounded-pill shadow-sm px-4"
+          (click)="saveEtagere()">Confirmer</button>
       </div>
     </div>
   </div>
 </div>
 
 <!-- DEPOT MODAL -->
-<div class="modal custom-modal" tabindex="-1" [class.show]="showDepotModal" [style.display]="showDepotModal ? 'block' : 'none'">
+<div class="modal custom-modal" tabindex="-1" [class.show]="showDepotModal"
+  [style.display]="showDepotModal ? 'block' : 'none'">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
       <div class="modal-header bg-light border-0 py-3">
-        <h5 class="modal-title fw-bold text-success"><i class="bi bi-building me-2"></i>{{ editingDepot?.id ? 'Modifier Dépôt' : 'Nouveau Dépôt' }}</h5>
+        <h5 class="modal-title fw-bold text-success"><i class="bi bi-building me-2"></i>{{ editingDepot?.id ? 'Modifier
+          Dépôt' : 'Nouveau Dépôt' }}</h5>
         <button type="button" class="btn-close" (click)="showDepotModal = false"></button>
       </div>
       <div class="modal-body px-4 py-4" *ngIf="editingDepot">
@@ -487,15 +523,18 @@
         </div>
       </div>
       <div class="modal-footer border-0 bg-light py-3">
-        <button type="button" class="btn btn-white text-muted fw-bold rounded-pill px-4" (click)="showDepotModal = false">Annuler</button>
-        <button type="button" class="btn btn-success fw-bold rounded-pill shadow-sm px-4" (click)="saveDepot()">Sauvegarder</button>
+        <button type="button" class="btn btn-white text-muted fw-bold rounded-pill px-4"
+          (click)="showDepotModal = false">Annuler</button>
+        <button type="button" class="btn btn-success fw-bold rounded-pill shadow-sm px-4"
+          (click)="saveDepot()">Sauvegarder</button>
       </div>
     </div>
   </div>
 </div>
 
 <!-- TRANSFER MODAL -->
-<div class="modal custom-modal" tabindex="-1" [class.show]="showTransferModal" [style.display]="showTransferModal ? 'block' : 'none'">
+<div class="modal custom-modal" tabindex="-1" [class.show]="showTransferModal"
+  [style.display]="showTransferModal ? 'block' : 'none'">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
       <div class="modal-header bg-danger text-white border-0 py-3">
@@ -529,14 +568,18 @@
           <div class="col-12 mt-4 text-center">
             <label class="form-label text-muted small fw-bold mb-2">Quantité</label>
             <div class="d-flex justify-content-center align-items-center">
-              <input type="number" class="form-control text-center fw-bold fs-4 text-danger w-50 py-2 border-danger rounded-4" [(ngModel)]="editingTransfer.quantity" min="1">
+              <input type="number"
+                class="form-control text-center fw-bold fs-4 text-danger w-50 py-2 border-danger rounded-4"
+                [(ngModel)]="editingTransfer.quantity" min="1">
             </div>
           </div>
         </div>
       </div>
       <div class="modal-footer border-0 bg-light py-3">
-        <button type="button" class="btn btn-white text-muted fw-bold rounded-pill px-4" (click)="showTransferModal = false">Annuler</button>
-        <button type="button" class="btn btn-danger fw-bold rounded-pill shadow-sm px-4" (click)="saveTransfer()">Exécuter le Transfert</button>
+        <button type="button" class="btn btn-white text-muted fw-bold rounded-pill px-4"
+          (click)="showTransferModal = false">Annuler</button>
+        <button type="button" class="btn btn-danger fw-bold rounded-pill shadow-sm px-4"
+          (click)="saveTransfer()">Exécuter le Transfert</button>
       </div>
     </div>
   </div>
