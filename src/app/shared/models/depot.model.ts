@@ -6,6 +6,7 @@ export interface Depot {
   address?: string;
   manager_name?: string;
   phone?: string;
+  quantity_depot?: number;
   created_at?: string;
 }
 

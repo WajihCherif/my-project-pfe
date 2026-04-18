@@ -1,7 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { forkJoin } from 'rxjs';
 import { ProductService } from '../../core/services/product.service';
+import { EtagereService } from '../../core/services/etagere.service';
 import { Product } from '../../shared/models/product.model';
+import { Etagere } from '../../shared/models/etagere.model';
 
 @Component({
   selector: 'app-etat',
@@ -15,8 +18,9 @@ export class EtatComponent implements OnInit, OnDestroy {
   clock = '';
   private iv: any;
 
-  // Track the actual backend products
+  // Track the actual backend data
   realProducts: Product[] = [];
+  etageres: Etagere[] = [];
   
   // Mixed Array for DEMO purpose: We will map real products randomly to mock states
   demoStates: any[] = [];
@@ -26,17 +30,24 @@ export class EtatComponent implements OnInit, OnDestroy {
     { time: '', color: '#f6c23e', msg: 'Inspectant les zones',       sub: 'Recherche de changements...' },
   ];
 
-  constructor(private productService: ProductService) {}
+  constructor(
+    private productService: ProductService,
+    private etagereService: EtagereService
+  ) {}
 
   ngOnInit() {
     this.tick();
     this.iv = setInterval(() => this.tick(), 1000);
 
-    // Fetch real products to make the view semi-dynamic
-    this.productService.getAll().subscribe({
+    // Fetch real data to make the view fully dynamic
+    forkJoin({
+      products: this.productService.getAll(),
+      etageres: this.etagereService.getAll()
+    }).subscribe({
       next: (data) => {
-        this.realProducts = data;
-        this.generateDemoStates();
+        this.realProducts = data.products;
+        this.etageres = data.etageres;
+        this.generateRealStates();
       }
     });
   }
@@ -51,26 +62,34 @@ export class EtatComponent implements OnInit, OnDestroy {
     this.clock = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
   }
 
-  // Purely visual logic for demonstration uses
-  generateDemoStates() {
-    this.demoStates = this.realProducts.map((p, index) => {
-      // Create some fake states for the demo
-      if (index === 1) {
-        return { name: p.name, state: 'TEMP_REMOVED', cls: 'warning', timer: '5s / 10s', progress: 50 };
-      } else if (index === 2) {
-        return { name: p.name, state: 'REMOVED', cls: 'danger', timer: 'Confirmé', progress: 100 };
-      }
-      return { name: p.name, state: 'ON_SHELF', cls: 'success', timer: '—', progress: null };
-    });
+  // Dynamically map etageres to states for visualization
+  generateRealStates() {
+    this.demoStates = this.etageres.map((e) => {
+      const prod = this.realProducts.find(p => p.id === e.product_id);
+      const name = prod ? prod.name : (e.name || e.etagere_code);
+      
+      let state = 'ON_SHELF';
+      let cls = 'success';
+      let progress: number | null = null;
 
-    if (this.demoStates.length === 0) {
-      // Fallback if no products in DB
-      this.demoStates = [
-        { name: "Bouteille d'eau", state: 'ON_SHELF', cls: 'success', timer: '—', progress: null },
-        { name: "Boîte de conserve", state: 'TEMP_REMOVED', cls: 'warning', timer: '5s / 10s', progress: 50 },
-        { name: "Snack sucré", state: 'REMOVED', cls: 'danger', timer: 'Confirmé', progress: 100 }
-      ];
-    }
+      if (!e.quantity_etagere || e.quantity_etagere === 0) {
+        state = 'REMOVED';
+        cls = 'danger';
+        progress = 100;
+      } else if (e.max_capacity && (e.quantity_etagere / e.max_capacity) <= 0.2) {
+        state = 'TEMP_REMOVED';
+        cls = 'warning';
+        progress = (e.quantity_etagere / e.max_capacity) * 100;
+      }
+
+      return {
+        name: name,
+        state: state,
+        cls: cls,
+        timer: state === 'ON_SHELF' ? '—' : state === 'REMOVED' ? 'Confirmé' : 'Seuil Bas',
+        progress: progress
+      };
+    });
 
     const n = new Date();
     this.timeline[0].time = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;

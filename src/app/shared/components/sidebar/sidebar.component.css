@@ -1,7 +1,107 @@
-.nav-link.active {
-  background-color: #0d6efd !important;
-  color: white !important;
+.sidebar-wrapper {
+  width: 280px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  background-color: #1a2a47; /* Deep Navy Dark Mode */
+  transition: all 0.3s ease;
+  z-index: 1000;
+  overflow-y: auto;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
-.nav-link:hover:not(.active) {
-  background-color: rgba(13, 110, 253, 0.1);
+
+.sidebar-header {
+  padding-bottom: 25px;
+}
+
+.logo-box {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #f07d00, #ff9f31); /* Orange Theme */
+  border-radius: 12px;
+}
+
+.brand-text .text-white {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  letter-spacing: -0.5px;
+}
+
+/* NAVIGATION STYLING */
+.custom-nav .nav-link {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 12px 18px;
+  border-radius: 12px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.custom-nav .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #fff !important;
+}
+
+.custom-nav .nav-link.active {
+  background-color: rgba(100, 149, 237, 0.2) !important; /* Soft blue background */
+  color: #fff !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.custom-nav .nav-link i {
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 0.2s;
+}
+
+.custom-nav .nav-link:hover i,
+.custom-nav .nav-link.active i {
+  color: #fff;
+}
+
+/* BADGES */
+.alert-badge {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 2px solid #1a2a47;
+}
+
+/* LOGOUT BUTTON */
+.sidebar-footer {
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.btn-logout {
+  background: #c22b2b;
+  color: #fff;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.btn-logout:hover {
+  background: #a31d1d;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(194, 43, 43, 0.3);
+}
+
+.btn-logout:active {
+  transform: translateY(0);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .sidebar-wrapper {
+    width: 80px;
+  }
+  .brand-text, .nav-link span, .alert-badge {
+    display: none;
+  }
+  .custom-nav .nav-link {
+    justify-content: center;
+    padding: 15px;
+  }
 }

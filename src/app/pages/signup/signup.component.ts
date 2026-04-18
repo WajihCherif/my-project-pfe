@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../core/services/auth.service';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-signup',
@@ -11,7 +12,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.css']
 })
-export class SignupComponent {
+export class SignupComponent implements OnInit {
   nom = '';
   prenom = '';
   email = '';
@@ -19,8 +20,15 @@ export class SignupComponent {
   role = 'user';
   error = '';
   loading = false;
+  loading = false;
 
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(
+    private auth: AuthService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+  }
 
   onSubmit() {
     if (!this.nom || !this.prenom || !this.email || !this.mot_de_passe) {
@@ -30,12 +38,13 @@ export class SignupComponent {
 
     this.loading = true;
     this.error = '';
-    this.auth.signup({
-      nom: this.nom,
-      prenom: this.prenom,
+    this.auth.register({
+      username: this.email, // Using email as username per login pattern
       email: this.email,
-      mot_de_passe: this.mot_de_passe,
+      password: this.mot_de_passe,
       role: this.role,
+      nom: this.nom,       // Keeping these in case backend uses them
+      prenom: this.prenom
     }).subscribe({
       next: () => {
         this.loading = false;

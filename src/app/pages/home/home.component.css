@@ -77,3 +77,15 @@
   box-shadow: none;
   background: #fff;
 }
+
+/* ── Recent Product Cards ── */
+.recent-product-card {
+  transition: all 0.3s ease;
+  border: 1px solid transparent !important;
+}
+
+.recent-product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(78, 115, 223, 0.12) !important;
+  border-color: rgba(78, 115, 223, 0.2) !important;
+}

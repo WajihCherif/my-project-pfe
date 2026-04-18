@@ -1,19 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
 import { Product, ProductCreate }  from '../../shared/models/product.model';
 import { Depot, DepotCreate }    from '../../shared/models/depot.model';
 import { Etagere, EtagereCreate }  from '../../shared/models/etagere.model';
-import { Transfer, TransferCreate } from '../../shared/models/transfer.model';
+import { Transfer, TransferCreate, TransferHistory } from '../../shared/models/transfer.model';
+import { Stock } from '../../shared/models/stock.model';
 import { User }     from '../../shared/models/user.model';
 
 import { ProductService } from '../../core/services/product.service';
 import { DepotService } from '../../core/services/depot.service';
 import { EtagereService } from '../../core/services/etagere.service';
 import { TransferService } from '../../core/services/transfer.service';
-import { UserService } from '../../core/services/user.service';
+import { StockService } from '../../core/services/stock.service';
 
 @Component({
   selector: 'app-stock',
@@ -23,24 +25,28 @@ import { UserService } from '../../core/services/user.service';
   styleUrls: ['./stock.component.css']
 })
 export class StockComponent implements OnInit {
-  activeTab: 'overview' | 'products' | 'etageres' | 'depots' | 'transfers' | 'users' = 'overview';
+  activeTab: 'overview' | 'products' | 'etageres' | 'depots' | 'transfers' = 'overview';
+  viewMode: 'table' | 'grid' = 'table';
 
   products:  Product[]  = [];
   depots:    Depot[]    = [];
   etageres:  Etagere[]  = [];
-  users:     User[]     = [];
-  transfers: Transfer[] = [];
+  transfers: TransferHistory[] = [];
+  inventory: Stock[]    = []; // Added inventory tracking
 
   searchProduct  = '';
   searchDepot    = '';
   searchEtagere  = '';
-  searchUser     = '';
   searchTransfer = '';
 
   loading = true;
   error   = '';
 
-  // Modal State
+  // Stats
+  totalStockValue = 0;
+  lowStockCount   = 0;
+
+  // Modal State... [Keeping existing modal states]
   showProductModal = false;
   editingProduct: any = null;
 
@@ -58,11 +64,23 @@ export class StockComponent implements OnInit {
     private depotService: DepotService,
     private etagereService: EtagereService,
     private transferService: TransferService,
-    private userService: UserService
+    private stockService: StockService, // Injected
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.loadData();
+    this.route.queryParams.subscribe(params => {
+      if (params['tab']) {
+        this.activeTab = params['tab'];
+      }
+      if (params['search']) {
+        this.searchProduct = params['search'];
+      }
+      if (params['searchEtagere']) {
+        this.searchEtagere = params['searchEtagere'];
+      }
+    });
   }
 
   loadData(): void {
@@ -73,15 +91,16 @@ export class StockComponent implements OnInit {
       products:  this.productService.getAll(),
       depots:    this.depotService.getAll(),
       etageres:  this.etagereService.getAll(),
-      users:     this.userService.getAll(),
-      transfers: this.transferService.getAll(),
+      transfers: this.transferService.getHistory(),
+      inventory: this.stockService.getAll(), // Added
     }).subscribe({
       next: (data) => {
         this.products  = data.products;
         this.depots    = data.depots;
         this.etageres  = data.etageres;
-        this.users     = data.users;
         this.transfers = data.transfers;
+        this.inventory = data.inventory;
+        this.calculateStats();
         this.loading   = false;
       },
       error: (err) => {
@@ -95,6 +114,10 @@ export class StockComponent implements OnInit {
   // --- TAB MANAGEMENT ---
   setTab(tab: typeof this.activeTab) {
     this.activeTab = tab;
+  }
+
+  setViewMode(mode: typeof this.viewMode) {
+    this.viewMode = mode;
   }
 
   // --- FILTERS ---
@@ -113,12 +136,8 @@ export class StockComponent implements OnInit {
     return this.etageres.filter(e => JSON.stringify(e).toLowerCase().includes(s));
   }
 
-  get filteredUsers(): User[] {
-    const s = this.searchUser.toLowerCase();
-    return this.users.filter(u => JSON.stringify(u).toLowerCase().includes(s));
-  }
 
-  get filteredTransfers(): Transfer[] {
+  get filteredTransfers(): TransferHistory[] { // Changed type
     const s = this.searchTransfer.toLowerCase();
     return this.transfers.filter(t => JSON.stringify(t).toLowerCase().includes(s));
   }
@@ -157,7 +176,7 @@ export class StockComponent implements OnInit {
 
   // --- ETAGERE CRUD ---
   openEtagereModal(etagere: Etagere | null = null) {
-    this.editingEtagere = etagere ? { ...etagere } : { etagere_code: '', name: '', depot_id: this.depots[0]?.id || 0, quantity: 0, max_capacity: 100 };
+    this.editingEtagere = etagere ? { ...etagere } : { etagere_code: '', name: '', depot_id: this.depots[0]?.id || 0, quantity_etagere: 0, max_capacity: 100 };
     this.showEtagereModal = true;
   }
 
@@ -198,15 +217,15 @@ export class StockComponent implements OnInit {
     const isEditing = 'id' in this.editingDepot;
 
     if (isEditing) {
-      this.depotService.update((this.editingDepot as Depot).id!, this.editingDepot).subscribe({
-        next: () => { this.showDepotModal = false; this.loadData(); },
-        error: (err) => { this.error = 'Erreur: ' + err.message; }
-      });
+        this.depotService.update((this.editingDepot as Depot).id!, this.editingDepot).subscribe({
+            next: () => { this.showDepotModal = false; this.loadData(); },
+            error: (err) => { this.error = 'Erreur: ' + err.message; }
+        });
     } else {
-      this.depotService.create(this.editingDepot as DepotCreate).subscribe({
-        next: () => { this.showDepotModal = false; this.loadData(); },
-        error: (err) => { this.error = 'Erreur: ' + err.message; }
-      });
+        this.depotService.create(this.editingDepot as DepotCreate).subscribe({
+            next: () => { this.showDepotModal = false; this.loadData(); },
+            error: (err) => { this.error = 'Erreur: ' + err.message; }
+        });
     }
   }
 
@@ -221,25 +240,54 @@ export class StockComponent implements OnInit {
 
   // --- TRANSFER CRUD ---
   openTransferModal() {
-    this.editingTransfer = { product_id: undefined, from_etagere_id: undefined, to_etagere_id: undefined, quantity: 1 } as any;
+    this.editingTransfer = { 
+      product_id: this.products[0]?.id, 
+      from_depot_id: this.depots[0]?.id, 
+      to_etagere_id: this.etageres[0]?.id, 
+      quantity: 1 
+    } as any;
     this.showTransferModal = true;
   }
 
   saveTransfer() {
     if (!this.editingTransfer) return;
-    this.transferService.create(this.editingTransfer as TransferCreate).subscribe({
+    this.transferService.createDepotToEtagere(this.editingTransfer as TransferCreate).subscribe({
       next: () => { this.showTransferModal = false; this.loadData(); },
       error: (err) => { this.error = 'Erreur: ' + err.message; }
     });
   }
 
-  deleteTransfer(id: number) {
-    if (confirm('Voulez-vous annuler ce transfert ?')) {
-      this.transferService.delete(id).subscribe({
-        next: () => this.loadData(),
-        error: (err) => { this.error = 'Erreur: ' + err.message; }
-      });
-    }
+  // --- STATISTICS CALCULATION ---
+  calculateStats() {
+    let totalValue = 0;
+    let lowCount = 0;
+
+    this.etageres.forEach(e => {
+      // Total value calculation (if product linked)
+      if (e.product_id && e.quantity_etagere) {
+        const prod = this.products.find(p => p.id === e.product_id);
+        if (prod && prod.price) {
+          totalValue += e.quantity_etagere * prod.price;
+        }
+      }
+
+      // Low stock check (less than 20% capacity)
+      if (e.max_capacity && e.quantity_etagere !== undefined) {
+        const pct = (e.quantity_etagere / e.max_capacity) * 100;
+        if (pct <= 20) {
+          lowCount++;
+        }
+      }
+    });
+
+    this.totalStockValue = totalValue;
+    this.lowStockCount = lowCount;
+  }
+
+  get recentTransfers(): TransferHistory[] { // Changed type
+    return [...this.transfers]
+      .sort((a, b) => new Date(b.transferred_at || 0).getTime() - new Date(a.transferred_at || 0).getTime())
+      .slice(0, 5);
   }
 
   // --- UTILS ---
@@ -257,5 +305,36 @@ export class StockComponent implements OnInit {
     if (pct <= 20) return 'Critique';
     if (pct <= 50) return 'Moyen';
     return 'OK';
+  }
+
+  getInventoryQty(productId: number | undefined): number {
+    if (!productId) return 0;
+    const item = this.inventory.find(i => i.product_id === productId);
+    return item ? item.quantity_stock : 0;
+  }
+
+  getBarcode(productId: number | undefined): string {
+    if (!productId) return '';
+    const item = this.inventory.find(i => i.product_id === productId);
+    return item ? item.barcode : '';
+  }
+
+  // --- LOOKUP HELPERS ---
+  getProductName(id: number | undefined): string {
+    if (!id) return 'Inconnu';
+    const p = this.products.find(x => x.id === id);
+    return p ? (p.name || p.product_code) : `Produit #${id}`;
+  }
+
+  getEtagereName(id: number | undefined): string {
+    if (!id) return 'Inconnue';
+    const e = this.etageres.find(x => x.id === id);
+    return e ? (e.name || e.etagere_code) : `Étagère #${id}`;
+  }
+
+  getDepotName(id: number | undefined): string {
+    if (!id) return 'Inconnu';
+    const d = this.depots.find(x => x.id === id);
+    return d ? d.name : `Dépôt #${id}`;
   }
 }

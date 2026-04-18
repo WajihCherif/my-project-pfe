@@ -1,144 +1,59 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { StockComponent } from './stock.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
-import { forkJoin } from 'rxjs';
+import { ProductService } from '../../core/services/product.service';
+import { DepotService } from '../../core/services/depot.service';
+import { EtagereService } from '../../core/services/etagere.service';
+import { TransferService } from '../../core/services/transfer.service';
+import { of } from 'rxjs';
 
-interface Product {
-  id: number;
-  product_code: string;
-  name: string;
-  category: string;
-  price: number;
-  unit: string;
-  barcode: string;
-}
+declare var describe: any;
+declare var beforeEach: any;
+declare var it: any;
+declare var expect: any;
 
-interface Depot {
-  id: number;
-  depot_code: string;
-  name: string;
-  location: string;
-  manager_name: string;
-  phone: string;
-}
+describe('StockComponent', () => {
+  let component: StockComponent;
+  let fixture: ComponentFixture<StockComponent>;
 
-interface Etagere {
-  id: number;
-  etagere_code: string;
-  name: string;
-  section: string;
-  quantity: number;
-  max_capacity: number;
-  depot_id: number;
-  product_id: number;
-}
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [
+        StockComponent, // Since it's a standalone component
+        HttpClientTestingModule,
+        FormsModule
+      ],
+      providers: [
+        { provide: ProductService, useValue: { getAll: () => of([]) } },
+        { provide: DepotService, useValue: { getAll: () => of([]) } },
+        { provide: EtagereService, useValue: { getAll: () => of([]) } },
+        { provide: TransferService, useValue: { getAll: () => of([]) } }
+      ]
+    }).compileComponents();
 
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  full_name: string;
-  role: string;
-  is_active: boolean;
-}
+    fixture = TestBed.createComponent(StockComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-interface Transfer {
-  id: number;
-  product_id: number;
-  from_etagere_id: number;
-  to_etagere_id: number;
-  quantity: number;
-  transfer_date: string;
-  notes: string;
-}
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 
-@Component({
-  selector: 'app-stock',
-  standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule],
-  templateUrl: './stock.component.html',
-  styleUrls: ['./stock.component.css']
-})
-export class StockComponent implements OnInit {
+  it('should calculate statistics correctly', () => {
+    // Mock data
+    component.products = [
+      { id: 1, product_code: 'P1', name: 'Prod 1', price: 10 }
+    ];
+    component.etageres = [
+      { id: 101, etagere_code: 'E1', name: 'Shelf 1', product_id: 1, quantity: 5, max_capacity: 100 },
+      { id: 102, etagere_code: 'E2', name: 'Shelf 2', product_id: 1, quantity: 2, max_capacity: 100 } // Low stock (<= 20%)
+    ];
 
-  private apiUrl = 'http://localhost:8000';
+    component.calculateStats();
 
-  products:  Product[]  = [];
-  depots:    Depot[]    = [];
-  etageres:  Etagere[]  = [];
-  users:     User[]     = [];
-  transfers: Transfer[] = [];
-
-  searchProduct  = '';
-  searchDepot    = '';
-  searchEtagere  = '';
-  searchUser     = '';
-  searchTransfer = '';
-
-  loading   = true;
-  error     = '';
-  activeTab = 'products';
-
-
-  constructor(private http: HttpClient) {}
-
-  ngOnInit(): void {
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-
-    forkJoin({
-      products:  this.http.get<Product[]>(`${this.apiUrl}/products`, { headers }),
-      depots:    this.http.get<Depot[]>(`${this.apiUrl}/depots`, { headers }),
-      etageres:  this.http.get<Etagere[]>(`${this.apiUrl}/etageres`, { headers }),
-      users:     this.http.get<User[]>(`${this.apiUrl}/users`, { headers }),
-      transfers: this.http.get<Transfer[]>(`${this.apiUrl}/transfers`, { headers }),
-    }).subscribe({
-      next: (data) => {
-        this.products  = data.products;
-        this.depots    = data.depots;
-        this.etageres  = data.etageres;
-        this.users     = data.users;
-        this.transfers = data.transfers;
-        this.loading   = false;
-      },
-      error: (err) => {
-        this.error   = 'Erreur de chargement des données.';
-        this.loading = false;
-        console.error(err);
-      }
-    });
-  }
-
-  setTab(tab: string) { this.activeTab = tab; }
-
-  get filteredProducts() {
-    return this.products.filter(p =>
-      JSON.stringify(p).toLowerCase().includes(this.searchProduct.toLowerCase())
-    );
-  }
-
-  get filteredDepots() {
-    return this.depots.filter(d =>
-      JSON.stringify(d).toLowerCase().includes(this.searchDepot.toLowerCase())
-    );
-  }
-
-  get filteredEtageres() {
-    return this.etageres.filter(e =>
-      JSON.stringify(e).toLowerCase().includes(this.searchEtagere.toLowerCase())
-    );
-  }
-
-  get filteredUsers() {
-    return this.users.filter(u =>
-      JSON.stringify(u).toLowerCase().includes(this.searchUser.toLowerCase())
-    );
-  }
-
-  get filteredTransfers() {
-    return this.transfers.filter(t =>
-      JSON.stringify(t).toLowerCase().includes(this.searchTransfer.toLowerCase())
-    );
-  }
-}
+    expect(component.totalStockValue).toBe(70); // (5 * 10) + (2 * 10)
+    expect(component.lowStockCount).toBe(1);    // Only Shelf 2 is <= 20%
+  });
+});

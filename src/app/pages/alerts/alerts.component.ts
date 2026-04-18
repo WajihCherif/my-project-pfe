@@ -1,6 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { ProductService } from '../../core/services/product.service';
+import { EtagereService } from '../../core/services/etagere.service';
+import { Product } from '../../shared/models/product.model';
+import { Etagere } from '../../shared/models/etagere.model';
 
 interface AlertItem {
   id: number;
@@ -9,6 +14,8 @@ interface AlertItem {
   title: string;
   sub: string;
   time: string;
+  productName?: string;
+  type: 'stock' | 'system';
 }
 
 @Component({
@@ -20,40 +27,95 @@ interface AlertItem {
 })
 export class AlertsComponent implements OnInit {
   alerts: AlertItem[] = [];
+  loading = true;
 
-  constructor(private productService: ProductService) {}
+  constructor(
+    private productService: ProductService,
+    private etagereService: EtagereService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
-    this.productService.getAll().subscribe({
-      next: (products) => {
-        // Generate mock alerts dynamically using database products if available
-        let genAlerts: AlertItem[] = [];
-        
-        if (products.length > 0) {
-          const p1 = products[0];
-          genAlerts.push({ id: 1, icon: '⚠️', critical: false, title: `${p1.name} temporairement retiré`, sub: 'Timer: 5s — En attente de confirmation YOLO', time: '18:34' });
-        }
-        
-        if (products.length > 1) {
-          const p2 = products[1];
-          genAlerts.push({ id: 2, icon: '🔴', critical: true, title: `${p2.name} retiré et confirmé manquant`, sub: 'Durée dépassée — Action requise immédiate', time: '17:33' });
-        }
-        
-        // Static system alerts
-        genAlerts.push({ id: 3, icon: '📷', critical: false, title: 'Caméra YOLO Sortie D — Signal faible', sub: 'Vérifier la connexion avec la Jetson Nano / Caméra IP', time: '15:10' });
-        genAlerts.push({ id: 4, icon: '🔔', critical: false, title: 'Rapport d\'analyse stock matinal disponible', sub: `Analyse complétée sur la base de données — Précision détectée 98.4%`, time: '08:00' });
-        
-        this.alerts = genAlerts;
+    this.refreshAlerts();
+  }
+
+  refreshAlerts() {
+    this.loading = true;
+    forkJoin({
+      products: this.productService.getAll(),
+      etageres: this.etagereService.getAll()
+    }).subscribe({
+      next: (data) => {
+        this.generateRealAlerts(data.products, data.etageres);
+        this.loading = false;
       },
       error: () => {
-        // Fallback demo
-        this.alerts = [
-          { id: 1, icon:'⚠️', critical:false, title:'Boîte de conserve Heinz 400g temporairement retirée',   sub:'Timer: 5s — En attente de confirmation', time:'18:34' },
-          { id: 2, icon:'🔴', critical:true,  title:'Snack sucré Kinder Bueno retiré et confirmé manquant',  sub:'Durée dépassée — Action requise',         time:'17:33' },
-          { id: 3, icon:'📷', critical:false, title:'Caméra Sortie D — Signal faible détecté',               sub:'Vérifier la connexion caméra',             time:'15:10' },
-          { id: 4, icon:'🔔', critical:false, title:'Rapport journalier disponible',                          sub:'24 produits analysés — 98% précision',     time:'08:00' },
-        ];
+        this.loading = false;
       }
+    });
+  }
+
+  generateRealAlerts(products: Product[], etageres: Etagere[]) {
+    let newAlerts: AlertItem[] = [];
+    let idCounter = 1;
+
+    etageres.forEach(e => {
+      const prod = products.find(p => p.id === e.product_id);
+      const name = prod ? prod.name : (e.name || e.etagere_code);
+      
+      // Critical: Empty
+      if (!e.quantity_etagere || e.quantity_etagere === 0) {
+        newAlerts.push({
+          id: idCounter++,
+          icon: '🔴',
+          critical: true,
+          title: `${name} manquant`,
+          sub: `L'étagère ${e.etagere_code} est vide. Action requise immédiate.`,
+          time: this.formatTime(e.last_updated),
+          productName: name,
+          type: 'stock'
+        });
+      } 
+      // Warning: Low Stock (<= 20%)
+      else if (e.max_capacity && (e.quantity_etagere / e.max_capacity) <= 0.2) {
+        newAlerts.push({
+          id: idCounter++,
+          icon: '⚠️',
+          critical: false,
+          title: `Stock faible : ${name}`,
+          sub: `Niveau critique détecté (${e.quantity_etagere} unités sur ${e.max_capacity}).`,
+          time: this.formatTime(e.last_updated),
+          productName: name,
+          type: 'stock'
+        });
+      }
+    });
+
+    // Add Simulated System Alerts for aesthetic
+    newAlerts.push({
+      id: idCounter++,
+      icon: '📷',
+      critical: false,
+      title: 'Caméra YOLO Sortie D — Signal fluide',
+      sub: 'Analyse CPU Jetson Nano : 45%. Précision : 98.4%.',
+      time: 'Maintenant',
+      type: 'system'
+    });
+
+    this.alerts = newAlerts;
+  }
+
+  private formatTime(dateStr?: string): string {
+    if (!dateStr) return '—';
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return 'Récemment';
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  }
+
+  goToStock(productName?: string) {
+    if (!productName) return;
+    this.router.navigate(['/stock'], { 
+      queryParams: { tab: 'products', search: productName } 
     });
   }
 

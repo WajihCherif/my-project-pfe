@@ -5,7 +5,7 @@ export interface Etagere {
   product_id?: number;
   name: string;
   section?: string;
-  quantity?: number;
+  quantity_etagere?: number;
   max_capacity?: number;
   last_restocked?: string;
   last_updated?: string;
@@ -17,6 +17,6 @@ export interface EtagereCreate {
   product_id?: number | null;
   name: string;
   section?: string;
-  quantity?: number;
+  quantity_etagere?: number;
   max_capacity?: number;
 }

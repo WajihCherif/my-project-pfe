@@ -1,586 +1,772 @@
-<div class="stock-dashboard-container py-4">
+<!-- ══════════════════════════════════════════════════════════════
+     STOCK MANAGEMENT PAGE  ·  stock.component.html
+══════════════════════════════════════════════════════════════ -->
+<div class="stock-dashboard-container py-4 px-md-4">
 
-  <!-- HEADER -->
-  <div class="d-flex justify-content-between align-items-center mb-4 px-3">
-    <div class="fs-3 fw-bold text-gradient">Gestion des Stocks</div>
-    <div class="badge bg-soft-primary p-2 fs-6">
-      <i class="bi bi-clock-history me-2"></i> Temps Réel
+  <!-- ── PAGE HEADER ── -->
+  <div class="d-flex align-items-center justify-content-between mb-5 flex-wrap gap-3">
+    <div>
+      <div class="fs-2 fw-bolder text-gradient d-flex align-items-center gap-2">
+        <span class="header-icon-wrap"><i class="fas fa-box-fill"></i></span>
+        Gestion du Stock
+      </div>
+      <div class="text-muted mt-1 fs-6">
+        Produits · Étagères · Dépôts · Transferts
+      </div>
     </div>
+    <button class="btn btn-primary btn-refresh d-flex align-items-center gap-2 rounded-pill px-4 shadow-sm"
+            (click)="loadData()" [disabled]="loading">
+      <i class="bi" [ngClass]="loading ? 'bi-arrow-repeat spin' : 'bi-arrow-clockwise'"></i>
+      {{ loading ? 'Chargement…' : 'Rafraîchir' }}
+    </button>
   </div>
 
-  <!-- ERROR ALERT -->
-  <div *ngIf="error" class="alert alert-danger mx-3 shadow-sm rounded-3">
-    <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Erreur :</strong> {{ error }}
+  <!-- ── GLOBAL ERROR BANNER ── -->
+  <div *ngIf="error" class="alert alert-danger d-flex align-items-center gap-3 rounded-4 shadow-sm mb-4 border-0">
+    <i class="bi bi-exclamation-octagon-fill fs-4"></i>
+    <span>{{ error }}</span>
+    <button class="btn-close ms-auto" (click)="error = ''"></button>
   </div>
 
-  <!-- TAB NAVIGATION -->
-  <ul class="nav nav-pills custom-tabs mb-4 px-3 gap-2" role="tablist">
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" [class.active]="activeTab === 'overview'" (click)="setTab('overview')">
-        <i class="bi bi-grid-fill me-2"></i>Vue Globale
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" [class.active]="activeTab === 'products'" (click)="setTab('products')">
-        <i class="bi bi-box-seam me-2"></i>Produits
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" [class.active]="activeTab === 'etageres'" (click)="setTab('etageres')">
-        <i class="bi bi-bookshelf me-2"></i>Étagères
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" [class.active]="activeTab === 'depots'" (click)="setTab('depots')">
-        <i class="bi bi-building me-2"></i>Dépôts
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" [class.active]="activeTab === 'transfers'" (click)="setTab('transfers')">
-        <i class="bi bi-arrow-left-right me-2"></i>Transferts
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" [class.active]="activeTab === 'users'" (click)="setTab('users')">
-        <i class="bi bi-people-fill me-2"></i>Utilisateurs
-      </button>
-    </li>
-  </ul>
-
-  <!-- LOADING SPINNER -->
-  <div *ngIf="loading" class="d-flex flex-column align-items-center justify-content-center py-5">
-    <div class="spinner-grow text-primary" role="status" style="width: 3rem; height: 3rem;">
-      <span class="visually-hidden">Chargement...</span>
-    </div>
-    <p class="mt-3 text-muted fw-semibold tracking-wide">Synchronisation avec le serveur...</p>
+  <!-- ── LOADING SKELETON ── -->
+  <div *ngIf="loading" class="loading-overlay d-flex flex-column align-items-center justify-content-center py-5">
+    <div class="spinner-ring"></div>
+    <div class="text-muted mt-4 fw-semibold">Synchronisation des données…</div>
   </div>
 
-  <div *ngIf="!loading && !error" class="tab-content px-3">
+  <!-- ══════════════════════════════════════════
+       MAIN CONTENT (shown when not loading)
+  ══════════════════════════════════════════ -->
+  <div *ngIf="!loading">
 
-    <!-- ==================== OVERVIEW TAB ==================== -->
-    <div class="tab-pane fade" [class.show]="activeTab === 'overview'" [class.active]="activeTab === 'overview'">
-      <div class="row g-4">
-        <!-- KPI Cards -->
-        <div class="col-md-3">
-          <div class="card kpi-card border-0 shadow-sm bg-gradient-primary h-100 p-4">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <div class="text-white-50 fw-bold mb-1">PRODUITS</div>
-                <div class="fs-1 fw-bolder text-white">{{ products.length }}</div>
-              </div>
-              <div class="kpi-icon bg-white bg-opacity-25 rounded-circle p-3">
-                <i class="bi bi-box text-white fs-3"></i>
-              </div>
-            </div>
+    <!-- ── KPI SUMMARY CARDS ── -->
+    <div class="row g-4 mb-5">
+      <div class="col-6 col-md-3">
+        <div class="kpi-card card border-0 shadow-sm rounded-4 p-4 text-center bg-glass h-100">
+          <div class="kpi-icon bg-primary bg-opacity-10 text-primary rounded-circle mx-auto mb-3">
+            <i class="fas fa-box fs-3"></i>
           </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card kpi-card border-0 shadow-sm bg-gradient-warning h-100 p-4">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <div class="text-white-50 fw-bold mb-1">ÉTAGÈRES</div>
-                <div class="fs-1 fw-bolder text-white">{{ etageres.length }}</div>
-              </div>
-              <div class="kpi-icon bg-white bg-opacity-25 rounded-circle p-3">
-                <i class="bi bi-bookshelf text-white fs-3"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card kpi-card border-0 shadow-sm bg-gradient-success h-100 p-4">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <div class="text-white-50 fw-bold mb-1">DÉPÔTS</div>
-                <div class="fs-1 fw-bolder text-white">{{ depots.length }}</div>
-              </div>
-              <div class="kpi-icon bg-white bg-opacity-25 rounded-circle p-3">
-                <i class="bi bi-building text-white fs-3"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card kpi-card border-0 shadow-sm bg-gradient-danger h-100 p-4">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <div class="text-white-50 fw-bold mb-1">TRANSFERTS</div>
-                <div class="fs-1 fw-bolder text-white">{{ transfers.length }}</div>
-              </div>
-              <div class="kpi-icon bg-white bg-opacity-25 rounded-circle p-3">
-                <i class="bi bi-arrow-left-right text-white fs-3"></i>
-              </div>
-            </div>
-          </div>
+          <div class="fs-1 fw-bolder text-primary">{{ products.length }}</div>
+          <div class="text-muted small mt-1 fw-semibold text-uppercase tracking-wide">Produits</div>
         </div>
       </div>
-
-      <div class="row mt-4">
-        <div class="col-12">
-          <div class="card border-0 shadow-sm rounded-4 text-center p-5 bg-glass">
-            <i class="bi bi-clipboard-data text-primary opacity-50 mb-3" style="font-size: 4rem;"></i>
-            <h4 class="fw-bold text-dark">Tableau de Bord Actif</h4>
-            <p class="text-muted">Sélectionnez un onglet ci-dessus pour gérer les entités en détail.</p>
+      <div class="col-6 col-md-3">
+        <div class="kpi-card card border-0 shadow-sm rounded-4 p-4 text-center bg-glass h-100">
+          <div class="kpi-icon bg-success bg-opacity-10 text-success rounded-circle mx-auto mb-3">
+            <i class="bi bi-currency-euro fs-3"></i>
           </div>
+          <div class="fs-1 fw-bolder text-success small-on-mobile">{{ totalStockValue | currency:'EUR':'symbol':'1.0-0' }}</div>
+          <div class="text-muted small mt-1 fw-semibold text-uppercase tracking-wide">Valeur Stock</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="kpi-card card border-0 shadow-sm rounded-4 p-4 text-center bg-glass h-100">
+          <div class="kpi-icon bg-danger bg-opacity-10 text-danger rounded-circle mx-auto mb-3">
+            <i class="bi bi-exclamation-triangle fs-3"></i>
+          </div>
+          <div class="fs-1 fw-bolder text-danger">{{ lowStockCount }}</div>
+          <div class="text-muted small mt-1 fw-semibold text-uppercase tracking-wide">Alertes Critiques</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="kpi-card card border-0 shadow-sm rounded-4 p-4 text-center bg-glass h-100">
+          <div class="kpi-icon bg-info bg-opacity-10 text-info rounded-circle mx-auto mb-3">
+            <i class="bi bi-arrow-left-right fs-3"></i>
+          </div>
+          <div class="fs-1 fw-bolder text-info">{{ transfers.length }}</div>
+          <div class="text-muted small mt-1 fw-semibold text-uppercase tracking-wide">Transferts</div>
         </div>
       </div>
     </div>
 
-    <!-- ==================== PRODUCTS TAB ==================== -->
-    <div class="tab-pane fade" [class.show]="activeTab === 'products'" [class.active]="activeTab === 'products'">
-      <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-glass">
-        <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
-          <div>
-            <h5 class="mb-0 fw-bold">Catalogue de Produits</h5>
-            <small class="text-muted">{{ filteredProducts.length }} enregistrements</small>
-          </div>
-          <div class="d-flex gap-2">
-            <div class="search-box">
-              <i class="bi bi-search"></i>
-              <input class="form-control rounded-pill border-0 bg-light px-4" placeholder="Rechercher..."
-                [(ngModel)]="searchProduct">
-            </div>
-            <button class="btn btn-primary rounded-pill shadow-sm px-4" (click)="openProductModal()">
-              <i class="bi bi-plus-lg me-2"></i>Nouveau
+    <!-- ── NAVIGATION TABS ── -->
+    <div class="card bg-glass border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+      <div class="tab-nav-bar px-3 pt-3">
+        <ul class="nav custom-tabs flex-nowrap overflow-auto">
+          <li class="nav-item">
+            <button class="nav-link d-flex align-items-center gap-2"
+                    [class.active]="activeTab === 'overview'"
+                    (click)="setTab('overview')">
+              <i class="fas fa-chart-line"></i> Vue d'ensemble
             </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link d-flex align-items-center gap-2"
+                    [class.active]="activeTab === 'products'"
+                    (click)="setTab('products')">
+              <i class="fas fa-boxes"></i> Produits
+              <span class="tab-badge">{{ products.length }}</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link d-flex align-items-center gap-2"
+                    [class.active]="activeTab === 'etageres'"
+                    (click)="setTab('etageres')">
+              <i class="fas fa-th"></i> Étagères
+              <span class="tab-badge">{{ etageres.length }}</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link d-flex align-items-center gap-2"
+                    [class.active]="activeTab === 'depots'"
+                    (click)="setTab('depots')">
+              <i class="fas fa-warehouse"></i> Dépôts
+              <span class="tab-badge">{{ depots.length }}</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link d-flex align-items-center gap-2"
+                    [class.active]="activeTab === 'transfers'"
+                    (click)="setTab('transfers')">
+              <i class="fas fa-exchange-alt"></i> Transferts
+              <span class="tab-badge">{{ transfers.length }}</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- ═══════════════════════════
+           TAB: OVERVIEW
+      ═══════════════════════════ -->
+      <div *ngIf="activeTab === 'overview'" class="p-4 tab-panel-fade">
+        <div class="row g-4">
+
+          <!-- Stock health by etagere -->
+          <div class="col-lg-7">
+            <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+              <i class="bi bi-bar-chart-line text-primary"></i> Capacité des Étagères
+            </h6>
+            <div class="d-flex flex-column gap-3">
+              <div *ngFor="let e of etageres" class="etagere-row d-flex align-items-center gap-3">
+                <div class="etagere-name text-muted fw-semibold small text-end" style="min-width:120px; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                  {{ e.name || e.etagere_code }}
+                </div>
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between mb-1">
+                    <span class="small fw-bold">
+                      <span class="text-dark">{{ getProductName(e.product_id) }}</span>
+                      <span [ngClass]="'ms-2 text-' + stockLevel(e.quantity_etagere ?? 0, e.max_capacity ?? 0)">
+                        ({{ e.quantity_etagere ?? 0 }} / {{ e.max_capacity ?? 0 }})
+                      </span>
+                    </span>
+                    <span class="badge rounded-pill small"
+                          [ngClass]="'stock-badge-' + stockLevel(e.quantity_etagere ?? 0, e.max_capacity ?? 0)">
+                      {{ stockLabel(e.quantity_etagere ?? 0, e.max_capacity ?? 0) }}
+                    </span>
+                  </div>
+                  <div class="progress" style="height: 8px; border-radius: 99px;">
+                    <div class="progress-bar"
+                         [ngClass]="'bg-' + stockLevel(e.quantity_etagere ?? 0, e.max_capacity ?? 0)"
+                         role="progressbar"
+                         [style.width.%]="e.max_capacity ? ((e.quantity_etagere ?? 0) / e.max_capacity * 100) : 0"
+                         style="border-radius: 99px; transition: width 0.8s ease;">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="etageres.length === 0" class="text-muted text-center py-4">
+                <i class="bi bi-inbox fs-2 d-block mb-2"></i>Aucune étagère enregistrée.
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activities (Transfers) -->
+          <div class="col-lg-5">
+            <h6 class="fw-bold text-dark mb-3 d-flex align-items-center justify-content-between gap-2">
+              <span class="d-flex align-items-center gap-2">
+                <i class="bi bi-activity text-info"></i> Activités Récentes
+              </span>
+              <button class="btn btn-link btn-sm text-decoration-none p-0" (click)="setTab('transfers')">Voir tout</button>
+            </h6>
+            <div class="d-flex flex-column gap-3">
+              <div *ngFor="let t of recentTransfers" class="activity-row p-3 rounded-4 bg-light bg-opacity-50 border-start border-4"
+                   [ngClass]="'border-info'">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="activity-icon bg-info bg-opacity-10 text-info rounded-circle d-flex align-items-center justify-content-center"
+                       style="width:36px; height:36px; flex-shrink:0;">
+                    <i class="bi bi-arrow-left-right small"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="fw-bold text-dark small">{{ getProductName(t.product_id) }}</div>
+                    <div class="text-muted extra-small mt-1">
+                      De <strong>{{ getEtagereName(t.from_etagere_id) }}</strong> vers <strong>{{ getEtagereName(t.to_etagere_id) }}</strong>
+                    </div>
+                  </div>
+                  <div class="text-end">
+                    <div class="fw-bolder text-primary small">+{{ t.quantity }}</div>
+                    <div class="text-muted extra-small">{{ t.transfer_date | date:'HH:mm' }}</div>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="recentTransfers.length === 0" class="text-muted text-center py-4">
+                <i class="bi bi-clock-history fs-2 d-block mb-2 opacity-25"></i>Aucune activité récente.
+              </div>
+            </div>
           </div>
         </div>
-        <div class="table-responsive px-4 pb-4">
-          <table class="table table-hover align-middle custom-table">
-            <thead class="text-muted small text-uppercase">
+      </div>
+
+      <!-- ═══════════════════════════
+           TAB: PRODUCTS
+      ═══════════════════════════ -->
+      <div *ngIf="activeTab === 'products'" class="tab-panel-fade">
+          <div class="d-flex align-items-center gap-3">
+            <div class="search-box position-relative">
+              <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+              <input type="text" class="form-control rounded-pill ps-5"
+                     placeholder="Rechercher un produit…"
+                     [(ngModel)]="searchProduct" id="searchProduct">
+            </div>
+            
+            <div class="view-mode-toggle ms-2 d-flex gap-1 bg-light p-1 rounded-pill">
+              <button class="btn btn-sm rounded-circle" [class.active]="viewMode === 'table'" (click)="setViewMode('table')" title="Vue Tableau">
+                <i class="fas fa-list"></i>
+              </button>
+              <button class="btn btn-sm rounded-circle" [class.active]="viewMode === 'grid'" (click)="setViewMode('grid')" title="Vue Catalogue">
+                <i class="fas fa-th-large"></i>
+              </button>
+            </div>
+          </div>
+
+          <button class="btn btn-primary rounded-pill px-4 d-flex align-items-center gap-2 shadow-sm fw-bold"
+                  (click)="openProductModal(null)" id="addProductBtn">
+            <i class="fas fa-plus"></i> Nouveau Produit
+          </button>
+
+        <!-- ── TABLE VIEW ── -->
+        <div class="table-responsive" *ngIf="viewMode === 'table'">
+          <table class="table custom-table align-middle mb-0">
+            <thead>
               <tr>
-                <th>Code</th>
-                <th>Produit</th>
+                <th class="ps-4">Code</th>
+                <th>Nom</th>
                 <th>Catégorie</th>
+                <th class="text-center">Physique / Barcode</th>
                 <th>Prix</th>
                 <th>Unité</th>
-                <th class="text-end">Actions</th>
+                <th class="text-end pe-4">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let p of filteredProducts">
-                <td><span class="badge bg-light text-secondary border">{{ p.product_code }}</span></td>
-                <td class="fw-bold">{{ p.name }}</td>
-                <td><span class="badge bg-info bg-opacity-10 text-info">{{ p.category || '-' }}</span></td>
-                <td class="text-success fw-bold">{{ p.price | number:'1.2-2' }} TND</td>
-                <td class="text-muted">{{ p.unit }}</td>
-                <td class="text-end">
-                  <button class="btn btn-sm btn-light rounded-circle me-2 action-btn" (click)="openProductModal(p)"><i
-                      class="bi bi-pencil-fill text-primary"></i></button>
-                  <button class="btn btn-sm btn-light rounded-circle action-btn" (click)="deleteProduct(p.id!)"><i
-                      class="bi bi-trash-fill text-danger"></i></button>
+                <td class="ps-4">
+                  <span class="badge bg-soft-primary fw-semibold">{{ p.product_code }}</span>
+                </td>
+                <td class="fw-semibold text-dark">{{ p.name }}</td>
+                <td><span class="text-muted small">{{ p.category || '—' }}</span></td>
+                <td class="text-center">
+                  <div class="d-flex flex-column align-items-center">
+                    <span class="fw-bold" [class.text-danger]="getInventoryQty(p.id) === 0">
+                      {{ getInventoryQty(p.id) }} {{ p.unit }}
+                    </span>
+                    <small class="text-muted extra-small" *ngIf="getBarcode(p.id)">
+                      <i class="fas fa-barcode me-1"></i>{{ getBarcode(p.id) }}
+                    </small>
+                  </div>
+                </td>
+                <td class="fw-bold text-primary">{{ p.price | currency:'EUR' }}</td>
+                <td><span class="badge bg-light text-secondary border">{{ p.unit }}</span></td>
+                <td class="text-end pe-4">
+                  <button class="btn btn-sm btn-light action-btn me-1 rounded-circle shadow-sm"
+                          title="Modifier" (click)="openProductModal(p)">
+                    <i class="fas fa-edit text-warning"></i>
+                  </button>
+                  <button class="btn btn-sm btn-light action-btn rounded-circle shadow-sm"
+                          title="Supprimer" (click)="deleteProduct(p.id!)">
+                    <i class="fas fa-trash-alt text-danger"></i>
+                  </button>
                 </td>
               </tr>
               <tr *ngIf="filteredProducts.length === 0">
-                <td colspan="6" class="text-center text-muted py-4">Aucun produit trouvé.</td>
+                <td colspan="6" class="text-center py-5 text-muted">
+                  <i class="fas fa-search fs-2 d-block mb-2"></i>Aucun résultat trouvé.
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
 
-    <!-- ==================== ETAGERES TAB ==================== -->
-    <div class="tab-pane fade" [class.show]="activeTab === 'etageres'" [class.active]="activeTab === 'etageres'">
-      <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-glass">
-        <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
-          <div>
-            <h5 class="mb-0 fw-bold">Gestion des Étagères</h5>
+        <!-- ── GRID (CATALOG) VIEW ── -->
+        <div class="product-grid" *ngIf="viewMode === 'grid'">
+          <div *ngFor="let p of filteredProducts" class="card product-card border-0 shadow-sm rounded-4 h-100">
+            <div class="product-card-header">
+              <span class="category-tag">{{ p.category || 'Général' }}</span>
+              <div class="product-card-icon">
+                <i class="fas fa-box"></i>
+              </div>
+            </div>
+            <div class="product-card-body d-flex flex-column">
+              <div class="mb-3">
+                <div class="product-code-small mb-1">{{ p.product_code }}</div>
+                <div class="product-name">{{ p.name }}</div>
+              </div>
+              <div class="mt-auto d-flex align-items-end justify-content-between">
+                <div>
+                  <div class="product-price-large">{{ p.price | currency:'EUR' }}</div>
+                  <span class="product-unit-tag">{{ p.unit }}</span>
+                </div>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-light action-btn rounded-pill border shadow-sm" (click)="openProductModal(p)">
+                    <i class="fas fa-edit text-warning"></i>
+                  </button>
+                  <button class="btn btn-light action-btn rounded-pill border shadow-sm" (click)="deleteProduct(p.id!)">
+                    <i class="fas fa-trash-alt text-danger"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="d-flex gap-2">
-            <input class="form-control rounded-pill border-0 bg-light" placeholder="Rechercher..."
-              [(ngModel)]="searchEtagere">
-            <button class="btn btn-warning text-dark fw-bold rounded-pill shadow-sm px-4 text-nowrap"
-              (click)="openEtagereModal()">
-              <i class="bi bi-plus-lg me-2"></i>Nouvelle Étagère
-            </button>
+          <div *ngIf="filteredProducts.length === 0" class="col-12 text-center py-5 text-muted">
+            <i class="fas fa-search fs-1 d-block mb-3 opacity-25"></i>
+            <h5>Aucun produit ne correspond à votre recherche.</h5>
           </div>
         </div>
-        <div class="table-responsive px-4 pb-4">
-          <table class="table table-hover align-middle custom-table">
-            <thead class="text-muted small text-uppercase">
+      </div>
+
+      <!-- ═══════════════════════════
+           TAB: ÉTAGÈRES
+      ═══════════════════════════ -->
+      <div *ngIf="activeTab === 'etageres'" class="tab-panel-fade">
+        <div class="p-4 d-flex align-items-center justify-content-between flex-wrap gap-3 border-bottom">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" class="form-control rounded-pill"
+                   placeholder="Rechercher une étagère…"
+                   [(ngModel)]="searchEtagere" id="searchEtagere">
+          </div>
+          <button class="btn btn-warning text-dark rounded-pill px-4 d-flex align-items-center gap-2 shadow-sm"
+                  (click)="openEtagereModal(null)" id="addEtagereBtn">
+            <i class="fas fa-plus"></i> Nouvelle Étagère
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table custom-table align-middle mb-0">
+            <thead>
               <tr>
-                <th>Code</th>
-                <th>Nom (Zone)</th>
-                <th>ID Dépôt</th>
-                <th>Stockage</th>
-                <th>État</th>
-                <th class="text-end">Actions</th>
+                <th class="ps-4">Code</th>
+                <th>Nom</th>
+                <th>Dépôt</th>
+                <th>Quantité</th>
+                <th>Capacité Max</th>
+                <th>Niveau</th>
+                <th class="text-end pe-4">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let e of filteredEtageres">
-                <td><span class="badge bg-light text-secondary border">{{ e.etagere_code }}</span></td>
-                <td class="fw-bold">{{ e.name }}</td>
-                <td><span class="badge bg-secondary">Dépôt #{{ e.depot_id }}</span></td>
-                <td>
-                  <div class="d-flex align-items-center gap-2">
-                    <span class="fw-bold">{{ e.quantity || 0 }}</span> / <span class="text-muted">{{ e.max_capacity || 0
-                      }}</span>
-                    <div class="progress flex-grow-1" style="height: 6px; width: 60px;">
-                      <div class="progress-bar bg-{{ stockLevel(e.quantity || 0, e.max_capacity || 0) }}"
-                        [style.width.%]="((e.quantity || 0) / (e.max_capacity || 1)) * 100"></div>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <span
-                    class="badge bg-{{ stockLevel(e.quantity || 0, e.max_capacity || 0) }} bg-opacity-25 text-{{ stockLevel(e.quantity || 0, e.max_capacity || 0) }} border-0 px-3 py-2 rounded-pill">
-                    {{ stockLabel(e.quantity || 0, e.max_capacity || 0) }}
+                <td class="ps-4">
+                  <span class="badge bg-warning bg-opacity-10 text-warning border border-warning fw-semibold">
+                    {{ e.etagere_code }}
                   </span>
                 </td>
-                <td class="text-end">
-                  <button class="btn btn-sm btn-light rounded-circle me-2 action-btn" (click)="openEtagereModal(e)"><i
-                      class="bi bi-pencil-fill text-warning"></i></button>
-                  <button class="btn btn-sm btn-light rounded-circle action-btn" (click)="deleteEtagere(e.id!)"><i
-                      class="bi bi-trash-fill text-danger"></i></button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ==================== DEPOTS TAB ==================== -->
-    <div class="tab-pane fade" [class.show]="activeTab === 'depots'" [class.active]="activeTab === 'depots'">
-      <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-glass">
-        <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
-          <h5 class="mb-0 fw-bold">Centres de Stockage (Dépôts)</h5>
-          <div class="d-flex gap-2">
-            <input class="form-control rounded-pill border-0 bg-light" placeholder="Rechercher..."
-              [(ngModel)]="searchDepot">
-            <button class="btn btn-success fw-bold rounded-pill shadow-sm px-4 text-nowrap" (click)="openDepotModal()">
-              <i class="bi bi-plus-lg me-2"></i>Nouveau Dépôt
-            </button>
-          </div>
-        </div>
-        <div class="table-responsive px-4 pb-4">
-          <table class="table table-hover align-middle custom-table">
-            <thead class="text-muted small text-uppercase">
-              <tr>
-                <th>Code</th>
-                <th>Nom du Dépôt</th>
-                <th>Localisation / Adresse</th>
-                <th>Responsable</th>
-                <th class="text-end">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let d of filteredDepots">
-                <td><span class="badge bg-success bg-opacity-10 text-success border border-success">{{ d.depot_code
-                    }}</span></td>
-                <td class="fw-bold">{{ d.name }}</td>
-                <td class="text-muted"><i class="bi bi-geo-alt me-1"></i>{{ d.location || d.address || 'Non spécifié' }}
-                </td>
+                <td class="fw-semibold text-dark">{{ e.name }}</td>
                 <td>
-                  <div class="d-flex align-items-center">
-                    <div
-                      class="avatar bg-light text-secondary rounded-circle me-2 d-flex justify-content-center align-items-center"
-                      style="width:30px; height:30px;">
-                      <i class="bi bi-person"></i>
+                  <span class="text-muted small">
+                    {{ getDepotName(e.depot_id) }}
+                  </span>
+                </td>
+                <td class="fw-bold">{{ e.quantity_etagere }}</td>
+                <td class="text-muted">{{ e.max_capacity }}</td>
+                <td style="min-width: 140px;">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="progress flex-grow-1" style="height: 7px; border-radius: 99px;">
+                      <div class="progress-bar"
+                           [ngClass]="'bg-' + stockLevel(e.quantity_etagere ?? 0, e.max_capacity ?? 0)"
+                           [style.width.%]="e.max_capacity ? ((e.quantity_etagere ?? 0) / e.max_capacity * 100) : 0"
+                           style="border-radius: 99px;">
+                      </div>
                     </div>
-                    {{ d.manager_name || 'Aucun' }}
+                    <span class="badge rounded-pill small"
+                          [ngClass]="'stock-badge-' + stockLevel(e.quantity_etagere ?? 0, e.max_capacity ?? 0)">
+                      {{ stockLabel(e.quantity_etagere ?? 0, e.max_capacity ?? 0) }}
+                    </span>
                   </div>
                 </td>
-                <td class="text-end">
-                  <button class="btn btn-sm btn-light rounded-circle me-2 action-btn" (click)="openDepotModal(d)"><i
-                      class="bi bi-pencil-fill text-success"></i></button>
-                  <button class="btn btn-sm btn-light rounded-circle action-btn" (click)="deleteDepot(d.id!)"><i
-                      class="bi bi-trash-fill text-danger"></i></button>
+                <td class="text-end pe-4">
+                  <button class="btn btn-sm btn-light action-btn me-1 rounded-circle shadow-sm"
+                          (click)="openEtagereModal(e)">
+                    <i class="fas fa-edit text-warning"></i>
+                  </button>
+                  <button class="btn btn-sm btn-light action-btn rounded-circle shadow-sm"
+                          (click)="deleteEtagere(e.id!)">
+                    <i class="fas fa-trash-alt text-danger"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="filteredEtageres.length === 0">
+                <td colspan="7" class="text-center py-5 text-muted">
+                  <i class="fas fa-search fs-2 d-block mb-2"></i>Aucun résultat.
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
-    </div>
 
-    <!-- ==================== TRANSFERS TAB ==================== -->
-    <div class="tab-pane fade" [class.show]="activeTab === 'transfers'" [class.active]="activeTab === 'transfers'">
-      <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-glass">
-        <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
-          <h5 class="mb-0 fw-bold">Historique des Transferts</h5>
-          <div class="d-flex gap-2">
-            <input class="form-control rounded-pill border-0 bg-light" placeholder="Rechercher..."
-              [(ngModel)]="searchTransfer">
-            <button class="btn btn-danger text-white fw-bold rounded-pill shadow-sm px-4 text-nowrap"
-              (click)="openTransferModal()">
-              <i class="bi bi-arrow-left-right me-2"></i>Nouveau Mouvement
-            </button>
+      <!-- ═══════════════════════════
+           TAB: DÉPÔTS
+      ═══════════════════════════ -->
+      <div *ngIf="activeTab === 'depots'" class="tab-panel-fade">
+        <div class="p-4 d-flex align-items-center justify-content-between flex-wrap gap-3 border-bottom">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" class="form-control rounded-pill"
+                   placeholder="Rechercher un dépôt…"
+                   [(ngModel)]="searchDepot" id="searchDepot">
+          </div>
+          <button class="btn btn-success rounded-pill px-4 d-flex align-items-center gap-2 shadow-sm"
+                  (click)="openDepotModal(null)" id="addDepotBtn">
+            <i class="fas fa-plus"></i> Nouveau Dépôt
+          </button>
+        </div>
+
+        <div class="row g-4 p-4">
+          <div *ngFor="let d of filteredDepots" class="col-md-4">
+            <div class="card depot-card border-0 shadow-sm rounded-4 h-100 p-4 bg-glass">
+              <div class="d-flex align-items-start justify-content-between mb-3">
+                <div class="depot-icon bg-success bg-opacity-10 text-success rounded-3 d-flex align-items-center justify-content-center"
+                     style="width:48px; height:48px;">
+                  <i class="fas fa-warehouse fs-4"></i>
+                </div>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-light action-btn rounded-circle shadow-sm"
+                          (click)="openDepotModal(d)">
+                    <i class="fas fa-edit text-warning"></i>
+                  </button>
+                  <button class="btn btn-sm btn-light action-btn rounded-circle shadow-sm"
+                          (click)="deleteDepot(d.id!)">
+                    <i class="fas fa-trash-alt text-danger"></i>
+                  </button>
+                </div>
+              </div>
+              <h6 class="fw-bold text-dark mb-1">{{ d.name }}</h6>
+              <div class="text-muted small mb-2">
+                <i class="fas fa-map-marker-alt me-1"></i>{{ d.location || 'Localisation non définie' }}
+              </div>
+              
+              <!-- Real-time Depot Stock -->
+              <div class="depot-stock-info mt-3 p-2 bg-light rounded-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="extra-small text-muted fw-bold text-uppercase">Stock Total</span>
+                  <span class="badge bg-success text-white small px-2">{{ d.quantity_depot || 0 }} unités</span>
+                </div>
+              </div>
+
+              <span class="badge bg-success bg-opacity-10 text-success border border-success fw-semibold mt-auto">
+                {{ d.depot_code }}
+              </span>
+            </div>
+          </div>
+
+          <div *ngIf="filteredDepots.length === 0" class="col-12 text-center py-5 text-muted">
+            <i class="fas fa-warehouse fs-2 d-block mb-2"></i>Aucun dépôt trouvé.
           </div>
         </div>
-        <div class="table-responsive px-4 pb-4">
-          <table class="table table-hover align-middle custom-table">
-            <thead class="text-muted small text-uppercase">
+      </div>
+
+      <!-- ═══════════════════════════
+           TAB: TRANSFERTS
+      ═══════════════════════════ -->
+      <div *ngIf="activeTab === 'transfers'" class="tab-panel-fade">
+        <div class="p-4 d-flex align-items-center justify-content-between flex-wrap gap-3 border-bottom">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" class="form-control rounded-pill"
+                   placeholder="Rechercher un transfert…"
+                   [(ngModel)]="searchTransfer" id="searchTransfer">
+          </div>
+          <button class="btn btn-info text-white rounded-pill px-4 d-flex align-items-center gap-2 shadow-sm"
+                  (click)="openTransferModal()" id="addTransferBtn">
+            <i class="fas fa-plus"></i> Nouveau Transfert
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table custom-table align-middle mb-0">
+            <thead>
               <tr>
-                <th>Produit</th>
-                <th>Origine <i class="bi bi-arrow-right mx-1"></i> Destination</th>
+                <th class="ps-4">#</th>
+                <th>Parcours (De ➔ À)</th>
                 <th>Quantité</th>
                 <th>Date</th>
-                <th class="text-end">Actions</th>
+                <th class="text-end pe-4">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let t of filteredTransfers">
-                <td><span class="badge bg-primary bg-opacity-10 text-primary">Prod #{{ t.product_id }}</span></td>
+                <td class="ps-4">
+                  <span class="badge bg-info bg-opacity-10 text-info border border-info fw-semibold">#{{ t.id }}</span>
+                </td>
+                <td class="fw-semibold text-dark">
+                  <div class="d-flex flex-column">
+                    <span>{{ t.product_name }}</span>
+                    <small class="text-muted extra-small">ID: {{ t.product_id }}</small>
+                  </div>
+                </td>
                 <td>
-                  <span class="badge bg-dark">Étagère #{{ t.from_etagere_id }}</span>
-                  <i class="bi bi-arrow-right mx-2 text-muted"></i>
-                  <span class="badge bg-success">Étagère #{{ t.to_etagere_id }}</span>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-soft-primary text-primary border-0 px-2 py-1">
+                      <i class="fas fa-warehouse me-1"></i> {{ t.from_depot_name || 'Dépôt Source' }}
+                    </span>
+                    <i class="fas fa-long-arrow-alt-right text-muted mx-1"></i>
+                    <span class="badge bg-soft-success text-success border-0 px-2 py-1">
+                      <i class="fas fa-th me-1"></i> {{ t.to_etagere_name || 'Étagère Cible' }}
+                    </span>
+                  </div>
                 </td>
-                <td><span class="fw-bold fs-5 text-danger">{{ t.quantity }}</span></td>
-                <td class="text-muted small"><i class="bi bi-calendar3 me-2"></i>{{ t.transfer_date | date:'short' }}
+                <td><span class="fw-bold text-info">{{ t.quantity }}</span></td>
+                <td class="text-muted small">
+                  {{ t.transferred_at | date:'dd/MM/yyyy HH:mm' }}
                 </td>
-                <td class="text-end">
-                  <button class="btn btn-sm btn-light rounded-circle action-btn" (click)="deleteTransfer(t.id!)"><i
-                      class="bi bi-x-circle-fill text-danger"></i></button>
+                <td class="text-end pe-4">
+                  <button class="btn btn-sm btn-light action-btn rounded-circle shadow-sm"
+                          title="Notes de transfert" *ngIf="t.notes">
+                    <i class="fas fa-sticky-note text-muted"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="filteredTransfers.length === 0">
+                <td colspan="7" class="text-center py-5 text-muted">
+                  <i class="bi bi-arrow-left-right fs-2 d-block mb-2"></i>Aucun transfert.
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
-    </div>
 
-    <!-- ==================== USERS TAB ==================== -->
-    <div class="tab-pane fade" [class.show]="activeTab === 'users'" [class.active]="activeTab === 'users'">
-      <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-glass">
-        <div class="card-header bg-white border-0 p-4">
-          <h5 class="mb-0 fw-bold">Comptes Utilisateurs</h5>
-        </div>
-        <div class="table-responsive px-4 pb-4 mt-3">
-          <table class="table table-hover align-middle custom-table">
-            <thead class="text-muted small text-uppercase">
-              <tr>
-                <th>Utilisateur</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Statut</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let u of filteredUsers">
-                <td>
-                  <div class="d-flex align-items-center">
-                    <div
-                      class="avatar bg-gradient-primary text-white rounded-circle me-3 d-flex justify-content-center align-items-center fw-bold"
-                      style="width:40px; height:40px;">
-                      {{ u.username.charAt(0).toUpperCase() }}
-                    </div>
-                    <div>
-                      <div class="fw-bold">{{ u.username }}</div>
-                      <div class="small text-muted">Utilisateur #{{ u.id }}</div>
-                    </div>
-                  </div>
-                </td>
-                <td>{{ u.email }}</td>
-                <td>
-                  <span class="badge rounded-pill border px-3 py-2"
-                    [ngClass]="u.role === 'admin' ? 'border-danger text-danger bg-danger bg-opacity-10' : 'border-secondary text-secondary bg-light'">
-                    <i class="bi" [ngClass]="u.role === 'admin' ? 'bi-shield-lock-fill' : 'bi-person-fill'"></i> {{
-                    u.role }}
-                  </span>
-                </td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <span class="text-muted small">{{ u.created_at | date:'shortDate' }}</span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
 
-  </div>
+    </div><!-- /card -->
+  </div><!-- /!loading -->
 </div>
 
-<!-- ==================== MODALS INLINE IMPLEMENTATION ==================== -->
-<!-- To avoid reliance on external JS, we use pure CSS & Angular styling for Modals -->
-<div class="custom-modal-backdrop" *ngIf="showProductModal || showEtagereModal || showDepotModal || showTransferModal">
-</div>
 
-<!-- PRODUCT MODAL -->
-<div class="modal custom-modal" tabindex="-1" [class.show]="showProductModal"
-  [style.display]="showProductModal ? 'block' : 'none'">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-      <div class="modal-header bg-light border-0 py-3">
-        <h5 class="modal-title fw-bold text-primary">
-          <i class="bi" [ngClass]="editingProduct?.id ? 'bi-pencil-square' : 'bi-plus-circle'"></i>
-          {{ editingProduct?.id ? 'Modifier le Produit' : 'Ajouter un Produit' }}
-        </h5>
-        <button type="button" class="btn-close" (click)="showProductModal = false"></button>
-      </div>
-      <div class="modal-body px-4 py-4" *ngIf="editingProduct">
-        <div class="row g-3">
-          <div class="col-6">
-            <label class="form-label text-muted small fw-bold">Code Produit*</label>
-            <input type="text" class="form-control rounded-3 bg-light border-0"
-              [(ngModel)]="editingProduct.product_code" [disabled]="!!editingProduct?.['id']">
-          </div>
-          <div class="col-6">
-            <label class="form-label text-muted small fw-bold">Nom*</label>
-            <input type="text" class="form-control rounded-3" [(ngModel)]="editingProduct.name">
-          </div>
-          <div class="col-6">
-            <label class="form-label text-muted small fw-bold">Catégorie</label>
-            <input type="text" class="form-control rounded-3" [(ngModel)]="editingProduct.category">
-          </div>
-          <div class="col-6">
-            <label class="form-label text-muted small fw-bold">Unité</label>
-            <input type="text" class="form-control rounded-3" [(ngModel)]="editingProduct.unit">
-          </div>
-          <div class="col-12">
-            <label class="form-label text-muted small fw-bold">Prix (TND)</label>
-            <input type="number" class="form-control rounded-3" [(ngModel)]="editingProduct.price">
-          </div>
+<!-- ══════════════════════════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════════════════════════ -->
+
+<!-- ── PRODUCT MODAL ── -->
+<div *ngIf="showProductModal" class="custom-modal-backdrop" (click)="showProductModal = false"></div>
+<div *ngIf="showProductModal" class="custom-modal show position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index:1050;">
+  <div class="modal-dialog-custom bg-white rounded-4 shadow-lg p-0 overflow-hidden" style="width: 100%; max-width: 520px;" (click)="$event.stopPropagation()">
+
+    <div class="modal-header-custom p-4 d-flex align-items-center justify-content-between border-bottom">
+      <div class="d-flex align-items-center gap-3">
+        <div class="modal-h-icon bg-primary bg-opacity-10 text-primary rounded-3 d-flex align-items-center justify-content-center"
+             style="width:44px;height:44px;">
+          <i class="fas fa-box fs-5"></i>
+        </div>
+        <div>
+          <h5 class="mb-0 fw-bold">{{ editingProduct?.id ? 'Modifier le Produit' : 'Nouveau Produit' }}</h5>
+          <div class="text-muted small">Remplissez les informations ci-dessous</div>
         </div>
       </div>
-      <div class="modal-footer border-0 bg-light py-3">
-        <button type="button" class="btn btn-white text-muted fw-bold rounded-pill px-4"
-          (click)="showProductModal = false">Annuler</button>
-        <button type="button" class="btn btn-primary fw-bold rounded-pill shadow-sm px-4"
-          (click)="saveProduct()">Enregistrer</button>
+      <button class="btn-close" (click)="showProductModal = false"></button>
+    </div>
+
+    <div class="p-4">
+      <div class="mb-3">
+        <label class="form-label fw-semibold text-dark small">Code Produit</label>
+        <input type="text" class="form-control rounded-3" placeholder="ex: PROD-001"
+               [(ngModel)]="editingProduct.product_code" id="productCode">
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold text-dark small">Nom du Produit</label>
+        <input type="text" class="form-control rounded-3" placeholder="ex: Lait demi-écrémé"
+               [(ngModel)]="editingProduct.name" id="productName">
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-6">
+          <label class="form-label fw-semibold text-dark small">Prix (€)</label>
+          <input type="number" class="form-control rounded-3" placeholder="0.00"
+                 [(ngModel)]="editingProduct.price" id="productPrice">
+        </div>
+        <div class="col-6">
+          <label class="form-label fw-semibold text-dark small">Unité</label>
+          <select class="form-select rounded-3" [(ngModel)]="editingProduct.unit" id="productUnit">
+            <option value="kg">kg</option>
+            <option value="L">L (Litre)</option>
+            <option value="pcs">pcs (Pièces)</option>
+            <option value="g">g (grammes)</option>
+            <option value="m">m (Mètre)</option>
+          </select>
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="form-label fw-semibold text-dark small">Catégorie</label>
+        <input type="text" class="form-control rounded-3" placeholder="ex: Alimentaire"
+               [(ngModel)]="editingProduct.category" id="productCategory">
+      </div>
+      <div class="d-flex gap-3">
+        <button class="btn btn-light flex-grow-1 rounded-3 fw-semibold" (click)="showProductModal = false">Annuler</button>
+        <button class="btn btn-primary flex-grow-1 rounded-3 fw-semibold d-flex align-items-center justify-content-center gap-2"
+                (click)="saveProduct()" id="saveProductBtn">
+          <i class="bi bi-check-lg"></i> Enregistrer
+        </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ETAGERE MODAL -->
-<div class="modal custom-modal" tabindex="-1" [class.show]="showEtagereModal"
-  [style.display]="showEtagereModal ? 'block' : 'none'">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-      <div class="modal-header bg-light border-0 py-3">
-        <h5 class="modal-title fw-bold text-warning text-dark"><i class="bi bi-bookshelf me-2"></i>{{ editingEtagere?.id
-          ? 'Modifier L\'Étagère' : 'Nouvelle Étagère' }}</h5>
-        <button type="button" class="btn-close" (click)="showEtagereModal = false"></button>
-      </div>
-      <div class="modal-body px-4 py-4" *ngIf="editingEtagere">
-        <div class="row g-3">
-          <div class="col-6">
-            <label class="form-label text-muted small fw-bold">Code Étagère*</label>
-            <input type="text" class="form-control rounded-3 bg-light border-0"
-              [(ngModel)]="editingEtagere.etagere_code">
-          </div>
-          <div class="col-6">
-            <label class="form-label text-muted small fw-bold">Nom (Section)*</label>
-            <input type="text" class="form-control rounded-3" [(ngModel)]="editingEtagere.name">
-          </div>
-          <div class="col-12">
-            <label class="form-label text-muted small fw-bold">Appartient au Dépôt*</label>
-            <select class="form-select rounded-3" [(ngModel)]="editingEtagere.depot_id">
-              <option *ngFor="let d of depots" [value]="d.id">{{ d.name }} ({{d.depot_code}})</option>
-            </select>
-          </div>
-          <div class="col-6 mt-4">
-            <label class="form-label text-muted small fw-bold">Quantité Actuelle</label>
-            <input type="number" class="form-control rounded-3" [(ngModel)]="editingEtagere.quantity">
-          </div>
-          <div class="col-6 mt-4">
-            <label class="form-label text-muted small fw-bold">Capacité Max</label>
-            <input type="number" class="form-control rounded-3" [(ngModel)]="editingEtagere.max_capacity">
-          </div>
+<!-- ── ÉTAGÈRE MODAL ── -->
+<div *ngIf="showEtagereModal" class="custom-modal-backdrop" (click)="showEtagereModal = false"></div>
+<div *ngIf="showEtagereModal" class="custom-modal show position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index:1050;">
+  <div class="modal-dialog-custom bg-white rounded-4 shadow-lg p-0 overflow-hidden" style="width: 100%; max-width: 520px;" (click)="$event.stopPropagation()">
+
+    <div class="modal-header-custom p-4 d-flex align-items-center justify-content-between border-bottom">
+      <div class="d-flex align-items-center gap-3">
+        <div class="modal-h-icon bg-warning bg-opacity-10 text-warning rounded-3 d-flex align-items-center justify-content-center"
+             style="width:44px;height:44px;">
+          <i class="bi bi-grid-3x3-gap fs-5"></i>
+        </div>
+        <div>
+          <h5 class="mb-0 fw-bold">{{ editingEtagere?.id ? 'Modifier l\'Étagère' : 'Nouvelle Étagère' }}</h5>
+          <div class="text-muted small">Remplissez les informations ci-dessous</div>
         </div>
       </div>
-      <div class="modal-footer border-0 bg-light py-3">
-        <button type="button" class="btn btn-white text-muted fw-bold rounded-pill px-4"
-          (click)="showEtagereModal = false">Annuler</button>
-        <button type="button" class="btn btn-warning fw-bold rounded-pill shadow-sm px-4"
-          (click)="saveEtagere()">Confirmer</button>
+      <button class="btn-close" (click)="showEtagereModal = false"></button>
+    </div>
+
+    <div class="p-4">
+      <div class="row g-3 mb-3">
+        <div class="col-6">
+          <label class="form-label fw-semibold text-dark small">Code Étagère</label>
+          <input type="text" class="form-control rounded-3" placeholder="ex: ETG-01"
+                 [(ngModel)]="editingEtagere.etagere_code" id="etagereCode">
+        </div>
+        <div class="col-6">
+          <label class="form-label fw-semibold text-dark small">Nom</label>
+          <input type="text" class="form-control rounded-3" placeholder="ex: Rayon Froids"
+                 [(ngModel)]="editingEtagere.name" id="etagereName">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold text-dark small">Dépôt</label>
+        <select class="form-select rounded-3" [(ngModel)]="editingEtagere.depot_id" id="etagereDepot">
+          <option *ngFor="let d of depots" [value]="d.id">{{ d.name }} ({{ d.depot_code }})</option>
+        </select>
+      </div>
+      <div class="row g-3 mb-4">
+        <div class="col-6">
+          <label class="form-label fw-semibold text-dark small">Quantité actuelle</label>
+          <input type="number" class="form-control rounded-3"
+                 [(ngModel)]="editingEtagere.quantity_etagere" id="etagereQty">
+        </div>
+        <div class="col-6">
+          <label class="form-label fw-semibold text-dark small">Capacité Max</label>
+          <input type="number" class="form-control rounded-3"
+                 [(ngModel)]="editingEtagere.max_capacity" id="etagereMax">
+        </div>
+      </div>
+      <div class="d-flex gap-3">
+        <button class="btn btn-light flex-grow-1 rounded-3 fw-semibold" (click)="showEtagereModal = false">Annuler</button>
+        <button class="btn btn-warning text-dark flex-grow-1 rounded-3 fw-semibold d-flex align-items-center justify-content-center gap-2"
+                (click)="saveEtagere()" id="saveEtagereBtn">
+          <i class="bi bi-check-lg"></i> Enregistrer
+        </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- DEPOT MODAL -->
-<div class="modal custom-modal" tabindex="-1" [class.show]="showDepotModal"
-  [style.display]="showDepotModal ? 'block' : 'none'">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-      <div class="modal-header bg-light border-0 py-3">
-        <h5 class="modal-title fw-bold text-success"><i class="bi bi-building me-2"></i>{{ editingDepot?.id ? 'Modifier
-          Dépôt' : 'Nouveau Dépôt' }}</h5>
-        <button type="button" class="btn-close" (click)="showDepotModal = false"></button>
-      </div>
-      <div class="modal-body px-4 py-4" *ngIf="editingDepot">
-        <div class="row g-3">
-          <div class="col-6">
-            <label class="form-label text-muted small fw-bold">Code Dépôt*</label>
-            <input type="text" class="form-control rounded-3 bg-light border-0" [(ngModel)]="editingDepot.depot_code">
-          </div>
-          <div class="col-6">
-            <label class="form-label text-muted small fw-bold">Nom*</label>
-            <input type="text" class="form-control rounded-3" [(ngModel)]="editingDepot.name">
-          </div>
-          <div class="col-12 mt-3">
-            <label class="form-label text-muted small fw-bold">Localisation</label>
-            <input type="text" class="form-control rounded-3" [(ngModel)]="editingDepot.location">
-          </div>
+<!-- ── DÉPÔT MODAL ── -->
+<div *ngIf="showDepotModal" class="custom-modal-backdrop" (click)="showDepotModal = false"></div>
+<div *ngIf="showDepotModal" class="custom-modal show position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index:1050;">
+  <div class="modal-dialog-custom bg-white rounded-4 shadow-lg p-0 overflow-hidden" style="width: 100%; max-width: 480px;" (click)="$event.stopPropagation()">
+
+    <div class="modal-header-custom p-4 d-flex align-items-center justify-content-between border-bottom">
+      <div class="d-flex align-items-center gap-3">
+        <div class="modal-h-icon bg-success bg-opacity-10 text-success rounded-3 d-flex align-items-center justify-content-center"
+             style="width:44px;height:44px;">
+          <i class="fas fa-warehouse fs-5"></i>
+        </div>
+        <div>
+          <h5 class="mb-0 fw-bold">{{ editingDepot?.id ? 'Modifier le Dépôt' : 'Nouveau Dépôt' }}</h5>
+          <div class="text-muted small">Remplissez les informations ci-dessous</div>
         </div>
       </div>
-      <div class="modal-footer border-0 bg-light py-3">
-        <button type="button" class="btn btn-white text-muted fw-bold rounded-pill px-4"
-          (click)="showDepotModal = false">Annuler</button>
-        <button type="button" class="btn btn-success fw-bold rounded-pill shadow-sm px-4"
-          (click)="saveDepot()">Sauvegarder</button>
+      <button class="btn-close" (click)="showDepotModal = false"></button>
+    </div>
+
+    <div class="p-4">
+      <div class="mb-3">
+        <label class="form-label fw-semibold text-dark small">Code Dépôt</label>
+        <input type="text" class="form-control rounded-3" placeholder="ex: DEP-001"
+               [(ngModel)]="editingDepot.depot_code" id="depotCode">
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold text-dark small">Nom du Dépôt</label>
+        <input type="text" class="form-control rounded-3" placeholder="ex: Entrepôt Central"
+               [(ngModel)]="editingDepot.name" id="depotName">
+      </div>
+      <div class="mb-4">
+        <label class="form-label fw-semibold text-dark small">Localisation</label>
+        <input type="text" class="form-control rounded-3" placeholder="ex: Zone A, Bâtiment 3"
+               [(ngModel)]="editingDepot.location" id="depotLocation">
+      </div>
+      <div class="d-flex gap-3">
+        <button class="btn btn-light flex-grow-1 rounded-3 fw-semibold" (click)="showDepotModal = false">Annuler</button>
+        <button class="btn btn-success flex-grow-1 rounded-3 fw-semibold d-flex align-items-center justify-content-center gap-2"
+                (click)="saveDepot()" id="saveDepotBtn">
+          <i class="bi bi-check-lg"></i> Enregistrer
+        </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- TRANSFER MODAL -->
-<div class="modal custom-modal" tabindex="-1" [class.show]="showTransferModal"
-  [style.display]="showTransferModal ? 'block' : 'none'">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-      <div class="modal-header bg-danger text-white border-0 py-3">
-        <h5 class="modal-title fw-bold"><i class="bi bi-arrow-left-right me-2"></i>Nouveau Transfert</h5>
-        <button type="button" class="btn-close btn-close-white" (click)="showTransferModal = false"></button>
-      </div>
-      <div class="modal-body px-4 py-4" *ngIf="editingTransfer">
-        <div class="alert alert-light border border-danger text-danger py-2 d-flex align-items-center">
-          <i class="bi bi-info-circle-fill me-2 fs-5"></i>
-          Un transfert réduira le stock dans l'étagère source et l'augmentera dans la cible.
+<!-- ── TRANSFERT MODAL ── -->
+<div *ngIf="showTransferModal" class="custom-modal-backdrop" (click)="showTransferModal = false"></div>
+<div *ngIf="showTransferModal" class="custom-modal show position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index:1050;">
+  <div class="modal-dialog-custom bg-white rounded-4 shadow-lg p-0 overflow-hidden" style="width: 100%; max-width: 500px;" (click)="$event.stopPropagation()">
+
+    <div class="modal-header-custom p-4 d-flex align-items-center justify-content-between border-bottom">
+      <div class="d-flex align-items-center gap-3">
+        <div class="modal-h-icon bg-info bg-opacity-10 text-info rounded-3 d-flex align-items-center justify-content-center"
+             style="width:44px;height:44px;">
+          <i class="bi bi-arrow-left-right fs-5"></i>
         </div>
-        <div class="row g-3 mt-1">
-          <div class="col-12">
-            <label class="form-label text-muted small fw-bold">Produit à transférer</label>
-            <select class="form-select rounded-3 border-danger shadow-none" [(ngModel)]="editingTransfer.product_id">
-              <option *ngFor="let p of products" [value]="p.id">{{ p.name }} ({{ p.product_code }})</option>
-            </select>
-          </div>
-          <div class="col-6">
-            <label class="form-label text-muted small fw-bold">Origine (De)</label>
-            <select class="form-select rounded-3" [(ngModel)]="editingTransfer.from_etagere_id">
-              <option *ngFor="let e of etageres" [value]="e.id">Étagère #{{ e.id }} - {{ e.name }}</option>
-            </select>
-          </div>
-          <div class="col-6">
-            <label class="form-label text-muted small fw-bold">Destination (Vers)</label>
-            <select class="form-select rounded-3" [(ngModel)]="editingTransfer.to_etagere_id">
-              <option *ngFor="let e of etageres" [value]="e.id">Étagère #{{ e.id }} - {{ e.name }}</option>
-            </select>
-          </div>
-          <div class="col-12 mt-4 text-center">
-            <label class="form-label text-muted small fw-bold mb-2">Quantité</label>
-            <div class="d-flex justify-content-center align-items-center">
-              <input type="number"
-                class="form-control text-center fw-bold fs-4 text-danger w-50 py-2 border-danger rounded-4"
-                [(ngModel)]="editingTransfer.quantity" min="1">
-            </div>
-          </div>
+        <div>
+          <h5 class="mb-0 fw-bold">Nouveau Transfert</h5>
+          <div class="text-muted small">Déplacer des produits entre étagères</div>
         </div>
       </div>
-      <div class="modal-footer border-0 bg-light py-3">
-        <button type="button" class="btn btn-white text-muted fw-bold rounded-pill px-4"
-          (click)="showTransferModal = false">Annuler</button>
-        <button type="button" class="btn btn-danger fw-bold rounded-pill shadow-sm px-4"
-          (click)="saveTransfer()">Exécuter le Transfert</button>
+      <button class="btn-close" (click)="showTransferModal = false"></button>
+    </div>
+
+    <div class="p-4">
+      <div class="mb-3">
+        <label class="form-label fw-semibold text-dark small">Produit</label>
+        <select class="form-select rounded-3" [(ngModel)]="editingTransfer.product_id" id="transferProduct">
+          <option *ngFor="let p of products" [value]="p.id">{{ p.name }} ({{ p.product_code }})</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold text-dark small">Étagère Source</label>
+        <select class="form-select rounded-3" [(ngModel)]="editingTransfer.from_etagere_id" id="transferFrom">
+          <option *ngFor="let e of etageres" [value]="e.id">{{ e.name }} ({{ e.etagere_code }})</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold text-dark small">Étagère Destination</label>
+        <select class="form-select rounded-3" [(ngModel)]="editingTransfer.to_etagere_id" id="transferTo">
+          <option *ngFor="let e of etageres" [value]="e.id">{{ e.name }} ({{ e.etagere_code }})</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label class="form-label fw-semibold text-dark small">Quantité</label>
+        <input type="number" class="form-control rounded-3" min="1"
+               [(ngModel)]="editingTransfer.quantity" id="transferQty">
+      </div>
+      <div class="d-flex gap-3">
+        <button class="btn btn-light flex-grow-1 rounded-3 fw-semibold" (click)="showTransferModal = false">Annuler</button>
+        <button class="btn btn-info text-white flex-grow-1 rounded-3 fw-semibold d-flex align-items-center justify-content-center gap-2"
+                (click)="saveTransfer()" id="saveTransferBtn">
+          <i class="bi bi-check-lg"></i> Valider le Transfert
+        </button>
       </div>
     </div>
   </div>
 </div>
+
