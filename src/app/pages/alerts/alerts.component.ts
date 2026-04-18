@@ -1,13 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
-import { ProductService } from '../../core/services/product.service';
-import { EtagereService } from '../../core/services/etagere.service';
-import { Product } from '../../shared/models/product.model';
-import { Etagere } from '../../shared/models/etagere.model';
+import { AlertService } from '../../core/services/alert.service';
+import { Alert } from '../../shared/models/alert.model';
 
-interface AlertItem {
+export interface AlertItem {
   id: number;
   icon: string;
   critical: boolean;
@@ -16,6 +13,15 @@ interface AlertItem {
   time: string;
   productName?: string;
   type: 'stock' | 'system';
+  
+  // Database specific fields
+  alert_type?: string;
+  expected_quantity?: number;
+  actual_quantity?: number;
+  difference?: number;
+  quantity_stock?: number;
+  quantity_etagere?: number;
+  quantity_depot?: number;
 }
 
 @Component({
@@ -30,8 +36,7 @@ export class AlertsComponent implements OnInit {
   loading = true;
 
   constructor(
-    private productService: ProductService,
-    private etagereService: EtagereService,
+    private alertService: AlertService,
     private router: Router
   ) {}
 
@@ -41,12 +46,9 @@ export class AlertsComponent implements OnInit {
 
   refreshAlerts() {
     this.loading = true;
-    forkJoin({
-      products: this.productService.getAll(),
-      etageres: this.etagereService.getAll()
-    }).subscribe({
-      next: (data) => {
-        this.generateRealAlerts(data.products, data.etageres);
+    this.alertService.getAll().subscribe({
+      next: (backendAlerts) => {
+        this.generateRealAlerts(backendAlerts);
         this.loading = false;
       },
       error: () => {
@@ -55,45 +57,35 @@ export class AlertsComponent implements OnInit {
     });
   }
 
-  generateRealAlerts(products: Product[], etageres: Etagere[]) {
+  generateRealAlerts(backendAlerts: Alert[]) {
     let newAlerts: AlertItem[] = [];
-    let idCounter = 1;
 
-    etageres.forEach(e => {
-      const prod = products.find(p => p.id === e.product_id);
-      const name = prod ? prod.name : (e.name || e.etagere_code);
+    backendAlerts.forEach(backendAlert => {
+      // Determine critical status based on actual quantity or alert type
+      const isCritical = backendAlert.alert_type === 'missing' || backendAlert.actual_quantity === 0;
       
-      // Critical: Empty
-      if (!e.quantity_etagere || e.quantity_etagere === 0) {
-        newAlerts.push({
-          id: idCounter++,
-          icon: '🔴',
-          critical: true,
-          title: `${name} manquant`,
-          sub: `L'étagère ${e.etagere_code} est vide. Action requise immédiate.`,
-          time: this.formatTime(e.last_updated),
-          productName: name,
-          type: 'stock'
-        });
-      } 
-      // Warning: Low Stock (<= 20%)
-      else if (e.max_capacity && (e.quantity_etagere / e.max_capacity) <= 0.2) {
-        newAlerts.push({
-          id: idCounter++,
-          icon: '⚠️',
-          critical: false,
-          title: `Stock faible : ${name}`,
-          sub: `Niveau critique détecté (${e.quantity_etagere} unités sur ${e.max_capacity}).`,
-          time: this.formatTime(e.last_updated),
-          productName: name,
-          type: 'stock'
-        });
-      }
+      newAlerts.push({
+        id: backendAlert.id,
+        icon: isCritical ? '🔴' : '⚠️',
+        critical: isCritical,
+        title: `Alerte Stock : ${backendAlert.product_name}`,
+        sub: backendAlert.message || `Anomalie détectée: Qté attendue (${backendAlert.expected_quantity}) ≠ Qté réelle (${backendAlert.actual_quantity}).`,
+        time: this.formatTime(backendAlert.created_at),
+        productName: backendAlert.product_name,
+        type: 'stock',
+        alert_type: backendAlert.alert_type,
+        expected_quantity: backendAlert.expected_quantity,
+        actual_quantity: backendAlert.actual_quantity,
+        difference: backendAlert.difference,
+        quantity_stock: backendAlert.quantity_stock,
+        quantity_etagere: backendAlert.quantity_etagere,
+        quantity_depot: backendAlert.quantity_depot
+      });
     });
 
     // Add Simulated System Alerts for aesthetic
     newAlerts.push({
-      id: idCounter++,
+      id: 999999, // Fake numeric ID
       icon: '📷',
       critical: false,
       title: 'Caméra YOLO Sortie D — Signal fluide',
@@ -120,6 +112,7 @@ export class AlertsComponent implements OnInit {
   }
 
   dismissAlert(id: number) {
+    // If backend doesn't support delete yet, just hide it locally
     this.alerts = this.alerts.filter(a => a.id !== id);
   }
 }

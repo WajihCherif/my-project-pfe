@@ -47,8 +47,8 @@ describe('StockComponent', () => {
       { id: 1, product_code: 'P1', name: 'Prod 1', price: 10 }
     ];
     component.etageres = [
-      { id: 101, etagere_code: 'E1', name: 'Shelf 1', product_id: 1, quantity: 5, max_capacity: 100 },
-      { id: 102, etagere_code: 'E2', name: 'Shelf 2', product_id: 1, quantity: 2, max_capacity: 100 } // Low stock (<= 20%)
+      { id: 101, etagere_code: 'E1', name: 'Shelf 1', depot_id: 1, product_id: 1, quantity_etagere: 5, max_capacity: 100 },
+      { id: 102, etagere_code: 'E2', name: 'Shelf 2', depot_id: 1, product_id: 1, quantity_etagere: 2, max_capacity: 100 } // Low stock (<= 20%)
     ];
 
     component.calculateStats();

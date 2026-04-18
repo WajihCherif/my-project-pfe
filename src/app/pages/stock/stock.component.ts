@@ -144,7 +144,7 @@ export class StockComponent implements OnInit {
 
   // --- PRODUCT CRUD ---
   openProductModal(product: Product | null = null) {
-    this.editingProduct = product ? { ...product } : { product_code: '', name: '', price: 0, unit: 'kg', category: '' };
+    this.editingProduct = product ? { ...product } : { product_code: '', name: '', price: 0, unit: 'mm', category: '' };
     this.showProductModal = true;
   }
 

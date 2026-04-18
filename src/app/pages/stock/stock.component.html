@@ -53,9 +53,9 @@
       <div class="col-6 col-md-3">
         <div class="kpi-card card border-0 shadow-sm rounded-4 p-4 text-center bg-glass h-100">
           <div class="kpi-icon bg-success bg-opacity-10 text-success rounded-circle mx-auto mb-3">
-            <i class="bi bi-currency-euro fs-3"></i>
+            <i class="fas fa-coins fs-3"></i>
           </div>
-          <div class="fs-1 fw-bolder text-success small-on-mobile">{{ totalStockValue | currency:'EUR':'symbol':'1.0-0' }}</div>
+          <div class="fs-1 fw-bolder text-success small-on-mobile">{{ totalStockValue | currency:'TND':'DT ':'1.0-0' }}</div>
           <div class="text-muted small mt-1 fw-semibold text-uppercase tracking-wide">Valeur Stock</div>
         </div>
       </div>
@@ -189,12 +189,12 @@
                   <div class="flex-grow-1">
                     <div class="fw-bold text-dark small">{{ getProductName(t.product_id) }}</div>
                     <div class="text-muted extra-small mt-1">
-                      De <strong>{{ getEtagereName(t.from_etagere_id) }}</strong> vers <strong>{{ getEtagereName(t.to_etagere_id) }}</strong>
+                      De <strong>{{ getEtagereName(t.to_etagere_id) }}</strong> vers <strong>{{ getEtagereName(t.to_etagere_id) }}</strong>
                     </div>
                   </div>
                   <div class="text-end">
                     <div class="fw-bolder text-primary small">+{{ t.quantity }}</div>
-                    <div class="text-muted extra-small">{{ t.transfer_date | date:'HH:mm' }}</div>
+                    <div class="text-muted extra-small">{{ t.transferred_at | date:'HH:mm' }}</div>
                   </div>
                 </div>
               </div>
@@ -264,7 +264,7 @@
                     </small>
                   </div>
                 </td>
-                <td class="fw-bold text-primary">{{ p.price | currency:'EUR' }}</td>
+                <td class="fw-bold text-primary">{{ p.price | currency:'TND':'DT ' }}</td>
                 <td><span class="badge bg-light text-secondary border">{{ p.unit }}</span></td>
                 <td class="text-end pe-4">
                   <button class="btn btn-sm btn-light action-btn me-1 rounded-circle shadow-sm"
@@ -302,7 +302,7 @@
               </div>
               <div class="mt-auto d-flex align-items-end justify-content-between">
                 <div>
-                  <div class="product-price-large">{{ p.price | currency:'EUR' }}</div>
+                  <div class="product-price-large">{{ p.price | currency:'TND':'DT ' }}</div>
                   <span class="product-unit-tag">{{ p.unit }}</span>
                 </div>
                 <div class="d-flex gap-2">
@@ -578,7 +578,7 @@
       </div>
       <div class="row g-3 mb-3">
         <div class="col-6">
-          <label class="form-label fw-semibold text-dark small">Prix (€)</label>
+          <label class="form-label fw-semibold text-dark small">Prix (DT)</label>
           <input type="number" class="form-control rounded-3" placeholder="0.00"
                  [(ngModel)]="editingProduct.price" id="productPrice">
         </div>
@@ -743,9 +743,9 @@
         </select>
       </div>
       <div class="mb-3">
-        <label class="form-label fw-semibold text-dark small">Étagère Source</label>
-        <select class="form-select rounded-3" [(ngModel)]="editingTransfer.from_etagere_id" id="transferFrom">
-          <option *ngFor="let e of etageres" [value]="e.id">{{ e.name }} ({{ e.etagere_code }})</option>
+        <label class="form-label fw-semibold text-dark small">Dépôt Source</label>
+        <select class="form-select rounded-3" [(ngModel)]="editingTransfer.from_depot_id" id="transferFrom">
+          <option *ngFor="let d of depots" [value]="d.id">{{ d.name }} ({{ d.depot_code }})</option>
         </select>
       </div>
       <div class="mb-3">
