@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { Observable, catchError, throwError } from 'rxjs';
-import { Stock, StockUpdate } from '../../shared/models/stock.model';
+import { Stock, StockUpdate, AddStockRequest } from '../../shared/models/stock.model';
 
 @Injectable({ providedIn: 'root' })
 export class StockService {
@@ -29,5 +29,9 @@ export class StockService {
   updateQuantity(productId: number, quantity: number): Observable<Stock> {
     return this.http.put<Stock>(`${this.apiUrl}/${productId}`, { quantity_stock: quantity } as StockUpdate)
       .pipe(catchError(this.handleError));
+  }
+
+  addStock(request: AddStockRequest): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/add`, request).pipe(catchError(this.handleError));
   }
 }

@@ -59,6 +59,9 @@ export class StockComponent implements OnInit {
   showTransferModal = false;
   editingTransfer: any = null;
 
+  showAddStockModal = false;
+  addingStock: any = null;
+
   constructor(
     private productService: ProductService,
     private depotService: DepotService,
@@ -253,6 +256,24 @@ export class StockComponent implements OnInit {
     if (!this.editingTransfer) return;
     this.transferService.createDepotToEtagere(this.editingTransfer as TransferCreate).subscribe({
       next: () => { this.showTransferModal = false; this.loadData(); },
+      error: (err) => { this.error = 'Erreur: ' + err.message; }
+    });
+  }
+
+  // --- ADD STOCK CRUD ---
+  openAddStockModal() {
+    this.addingStock = { 
+      product_id: this.products[0]?.id, 
+      depot_id: this.depots[0]?.id, 
+      quantity: 1 
+    };
+    this.showAddStockModal = true;
+  }
+
+  saveAddStock() {
+    if (!this.addingStock) return;
+    this.stockService.addStock(this.addingStock).subscribe({
+      next: () => { this.showAddStockModal = false; this.loadData(); },
       error: (err) => { this.error = 'Erreur: ' + err.message; }
     });
   }

@@ -79,6 +79,8 @@
       </div>
     </div>
 
+
+
     <!-- ── NAVIGATION TABS ── -->
     <div class="card bg-glass border-0 shadow-sm rounded-4 overflow-hidden mb-4">
       <div class="tab-nav-bar px-3 pt-3">
@@ -770,3 +772,50 @@
   </div>
 </div>
 
+<!-- ── ADD STOCK MODAL ── -->
+<div *ngIf="showAddStockModal" class="custom-modal-backdrop" (click)="showAddStockModal = false"></div>
+<div *ngIf="showAddStockModal" class="custom-modal show position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index:1050;">
+  <div class="modal-dialog-custom bg-white rounded-4 shadow-lg p-0 overflow-hidden" style="width: 100%; max-width: 500px;" (click)="$event.stopPropagation()">
+
+    <div class="modal-header-custom p-4 d-flex align-items-center justify-content-between border-bottom">
+      <div class="d-flex align-items-center gap-3">
+        <div class="modal-h-icon bg-primary bg-opacity-10 text-primary rounded-3 d-flex align-items-center justify-content-center"
+             style="width:44px;height:44px;">
+          <i class="fas fa-boxes fs-5"></i>
+        </div>
+        <div>
+          <h5 class="mb-0 fw-bold">Ajouter du Stock</h5>
+          <div class="text-muted small">Alimenter un dépôt pour un produit existant</div>
+        </div>
+      </div>
+      <button class="btn-close" (click)="showAddStockModal = false"></button>
+    </div>
+
+    <div class="p-4">
+      <div class="mb-3">
+        <label class="form-label fw-semibold text-dark small">Produit</label>
+        <select class="form-select rounded-3" [(ngModel)]="addingStock.product_id" id="addStockProduct">
+          <option *ngFor="let p of products" [value]="p.id">{{ p.name }} ({{ p.product_code }})</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold text-dark small">Dépôt Cible</label>
+        <select class="form-select rounded-3" [(ngModel)]="addingStock.depot_id" id="addStockDepot">
+          <option *ngFor="let d of depots" [value]="d.id">{{ d.name }} ({{ d.depot_code }})</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label class="form-label fw-semibold text-dark small">Quantité à Ajouter</label>
+        <input type="number" class="form-control rounded-3" min="1"
+               [(ngModel)]="addingStock.quantity" id="addStockQty">
+      </div>
+      <div class="d-flex gap-3">
+        <button class="btn btn-light flex-grow-1 rounded-3 fw-semibold" (click)="showAddStockModal = false">Annuler</button>
+        <button class="btn btn-primary text-white flex-grow-1 rounded-3 fw-semibold d-flex align-items-center justify-content-center gap-2"
+                (click)="saveAddStock()" id="saveAddStockBtn">
+          <i class="bi bi-check-lg"></i> Ajouter le Stock
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

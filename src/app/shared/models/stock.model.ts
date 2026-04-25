@@ -10,3 +10,9 @@ export interface Stock {
 export interface StockUpdate {
   quantity_stock: number;
 }
+
+export interface AddStockRequest {
+  product_id: number;
+  depot_id: number;
+  quantity: number;
+}
