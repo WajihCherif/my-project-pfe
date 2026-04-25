@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AlertService } from '../../core/services/alert.service';
+import { ProductService } from '../../core/services/product.service';
 import { Alert } from '../../shared/models/alert.model';
+import { Product } from '../../shared/models/product.model';
 
 export interface AlertItem {
   id: number;
@@ -27,21 +30,48 @@ export interface AlertItem {
 @Component({
   selector: 'app-alerts',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './alerts.component.html',
   styleUrls: ['./alerts.component.css']
 })
 export class AlertsComponent implements OnInit {
   alerts: AlertItem[] = [];
   loading = true;
+  
+  filterSeverity: string = 'all';
+  filterDate: string = 'today';
+
+  // --- Diagnostic Tools State ---
+  products: Product[] = [];
+  diagSelectedProductId: number | null = null;
+  diagSystemStock: number | null = null;
+  diagExpectedEtagere: number | null = null;
+  diagExpectedDepot: number | null = null;
+
+  diagEtagereCount: number | null = null;
+  diagDepotCount: number | null = null;
+  
+  isScanning: boolean = false;
+  scanComplete: boolean = false;
+  diagResult: any = null;
 
   constructor(
     private alertService: AlertService,
+    private productService: ProductService,
     private router: Router
   ) {}
 
   ngOnInit() {
     this.refreshAlerts();
+    this.productService.getAll().subscribe(data => this.products = data);
+  }
+
+  get filteredAlerts(): AlertItem[] {
+    return this.alerts.filter(a => {
+      if (this.filterSeverity === 'critical' && !a.critical) return false;
+      if (this.filterSeverity === 'info' && a.critical) return false;
+      return true;
+    });
   }
 
   refreshAlerts() {
@@ -61,9 +91,7 @@ export class AlertsComponent implements OnInit {
     let newAlerts: AlertItem[] = [];
 
     backendAlerts.forEach(backendAlert => {
-      // Determine critical status based on actual quantity or alert type
       const isCritical = backendAlert.alert_type === 'missing' || backendAlert.actual_quantity === 0;
-      
       newAlerts.push({
         id: backendAlert.id,
         icon: isCritical ? '🔴' : '⚠️',
@@ -112,7 +140,67 @@ export class AlertsComponent implements OnInit {
   }
 
   dismissAlert(id: number) {
-    // If backend doesn't support delete yet, just hide it locally
     this.alerts = this.alerts.filter(a => a.id !== id);
+  }
+
+  getEcart(): number | null {
+    if (this.diagSystemStock == null || (this.diagDepotCount == null && this.diagEtagereCount == null)) return null;
+    const totalTrouve = (this.diagDepotCount || 0) + (this.diagEtagereCount || 0);
+    return totalTrouve - this.diagSystemStock;
+  }
+
+  calculerEtAlerter() {
+    if (this.diagSystemStock == null || this.diagEtagereCount == null || this.diagDepotCount == null) return;
+    
+    // Condition Dynamique & Automatique :
+    // Sépare le calcul pour le dépôt et l'étagère
+    const expectedEta = this.diagExpectedEtagere || Math.floor(this.diagSystemStock * 0.4);
+    const expectedDep = this.diagExpectedDepot || (this.diagSystemStock - expectedEta);
+
+    const diffEtagere = expectedEta - this.diagEtagereCount;
+    const diffDepot = expectedDep - this.diagDepotCount;
+    const diffTotal = diffEtagere + diffDepot;
+    const actualTotal = this.diagEtagereCount + this.diagDepotCount;
+    
+    if (diffTotal !== 0 && this.diagSelectedProductId) {
+      const prod = this.products.find(p => p.id == this.diagSelectedProductId);
+      const prodName = prod ? prod.name : 'Produit Inconnu';
+      
+      const alertPayload = {
+        product_id: this.diagSelectedProductId,
+        product_name: prodName,
+        alert_type: diffTotal > 0 ? "missing" : "excess",
+        expected_quantity: this.diagSystemStock,
+        actual_quantity: actualTotal,
+        difference: Math.abs(diffTotal),
+        message: diffTotal > 0 
+          ? `ALERTE MANQUANTS SÉPARÉS: ${diffEtagere > 0 ? diffEtagere + ' manquants sur étagère' : 'Étagère Conforme'}, ${diffDepot > 0 ? diffDepot + ' manquants au dépôt' : 'Dépôt Conforme'}.`
+          : `ALERTE EXCÈS: Stock excédentaire de ${Math.abs(diffTotal)} produits.`,
+        quantity_stock: this.diagSystemStock,
+        quantity_etagere: this.diagEtagereCount,
+        quantity_depot: this.diagDepotCount
+      };
+
+      this.alertService.createAlert(alertPayload).subscribe({
+        next: (createdAlert) => {
+          this.refreshAlerts();
+          this.resetDiagnostic();
+        },
+        error: (err) => console.error("Could not save diagnostic alert", err)
+      });
+    } else {
+      this.resetDiagnostic();
+    }
+  }
+
+  resetDiagnostic() {
+    this.diagSystemStock = null;
+    this.diagExpectedEtagere = null;
+    this.diagExpectedDepot = null;
+    this.diagEtagereCount = null;
+    this.diagDepotCount = null;
+    this.diagSelectedProductId = null;
+    this.scanComplete = false;
+    this.diagResult = null;
   }
 }

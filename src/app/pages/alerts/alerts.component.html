@@ -2,27 +2,141 @@
   <div class="d-flex align-items-center mb-5">
     <div class="fs-2 fw-bolder text-gradient"><i class="bi bi-bell-fill me-3"></i>Centre d'Alertes YOLO</div>
   </div>
+  <div class="row mb-4">
+    <div class="col-md-5">
+      <label class="text-muted small fw-bold mb-2">Sélectionnez le produit ciblé par le diagnostic :</label>
+      <select class="form-select bg-white border-0 shadow-sm rounded-pill fw-bold" [(ngModel)]="diagSelectedProductId" (change)="resetDiagnostic()">
+        <option [ngValue]="null" disabled selected>Choisir un produit...</option>
+        <option *ngFor="let p of products" [ngValue]="p.id">{{ p.name }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- DIAGNOSTIC STOCK WIDGET (Contrôle de Stock - EXACT MATCH) -->
+  <div class="control-stock-wrapper p-4 p-md-5 rounded-4 mb-5" style="background-color: #0b0e14; max-width: 900px; margin: 0 auto; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+    <div class="mb-5">
+      <h1 class="text-white fw-bolder mb-1" style="font-family: 'Arial Black', Impact, sans-serif; letter-spacing: -2px; text-transform: uppercase; font-size: 3.2rem; transform: scaleX(1.1); transform-origin: left;">Contrôle de Stock</h1>
+      <div style="font-family: 'Courier New', Courier, monospace; color: #5c729e; font-size: 1.05rem;">// Vérification automatique dépôt + étagère</div>
+    </div>
+
+    <!-- 01 SAISIE PHYSIQUE -->
+    <div class="card mb-4 border-0" style="background-color: #141720; border-radius: 12px; border: 1px solid rgba(255,255,255,0.02) !important;">
+      <div class="card-body p-4 p-md-5">
+        <div class="mb-4 fw-bold" style="color: #6377a3; font-family: monospace; font-size: 0.95rem; letter-spacing: 1.5px;">01 - SAISIE PHYSIQUE</div>
+        
+        <div class="row g-4 mb-4">
+          <div class="col-md-6">
+            <label class="mb-3 fw-bold" style="color: #7b8ba8;">Produits au dépôt</label>
+            <input type="number" class="form-control border-0 text-white shadow-none py-3 px-4 fw-bold" style="background-color: #1c212e; border-radius: 8px; font-size: 1.1rem; font-family: monospace;" placeholder="0" [(ngModel)]="diagDepotCount">
+          </div>
+          <div class="col-md-6">
+            <label class="mb-3 fw-bold" style="color: #7b8ba8;">Produits en étagère</label>
+            <input type="number" class="form-control border-0 text-white shadow-none py-3 px-4 fw-bold" style="background-color: #1c212e; border-radius: 8px; font-size: 1.1rem; font-family: monospace;" placeholder="0" [(ngModel)]="diagEtagereCount">
+          </div>
+        </div>
+
+        <div class="p-4 d-flex justify-content-between align-items-center mt-3" style="background-color: #181d28; border: 1px dashed #2d364b; border-radius: 8px;">
+          <div style="color: #6377a3; font-family: monospace; font-size: 0.95rem; line-height: 1.6;">Total calculé automatiquement<br>dépôt + étagère = ?</div>
+          <div class="d-flex align-items-center justify-content-center" style="min-width: 40px; height: 40px;">
+            <ng-container *ngIf="diagDepotCount != null || diagEtagereCount != null; else dashTotal1">
+              <span class="fs-4 fw-bold" style="color: #4062f6;">{{ (diagDepotCount || 0) + (diagEtagereCount || 0) }}</span>
+            </ng-container>
+            <ng-template #dashTotal1>
+              <div style="width: 18px; height: 4px; background-color: #4062f6; border-radius: 1px;"></div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 STOCK SYSTEME -->
+    <div class="card mb-4 border-0" style="background-color: #141720; border-radius: 12px; border: 1px solid rgba(255,255,255,0.02) !important;">
+      <div class="card-body p-4 p-md-5">
+        <div class="mb-4 fw-bold" style="color: #6377a3; font-family: monospace; font-size: 0.95rem; letter-spacing: 1.5px;">02 - STOCK SYSTÈME</div>
+        <label class="mb-3 fw-bold" style="color: #7b8ba8;">Nombre de produits dans le stock (base de données)</label>
+        <input type="number" class="form-control border-0 text-white shadow-none py-3 px-4 fw-bold" style="background-color: #1c212e; border-radius: 8px; font-size: 1.1rem; font-family: monospace;" placeholder="ex: 200" [(ngModel)]="diagSystemStock">
+      </div>
+    </div>
+
+    <!-- 03 RESULTAT COMPARAISON -->
+    <div class="card border-0 mb-3" style="background-color: #141720; border-radius: 12px; border: 1px solid rgba(255,255,255,0.02) !important;">
+      <div class="card-body p-4 p-md-5">
+        <div class="mb-4 fw-bold" style="color: #6377a3; font-family: monospace; font-size: 0.95rem; letter-spacing: 1.5px;">03 - RÉSULTAT COMPARAISON</div>
+        
+        <div class="row g-4">
+          <div class="col-md-4">
+            <div class="text-center p-4 py-4 h-100 d-flex flex-column justify-content-center" style="background-color: #1c212e; border-radius: 8px; border: 1px solid #232938;">
+              <div class="mb-3 fw-bold" style="color: #6377a3; font-family: monospace; font-size: 0.8rem; letter-spacing: 1.5px;">STOCK SYSTÈME</div>
+              <div class="d-flex align-items-center justify-content-center" style="height: 30px;">
+                <ng-container *ngIf="diagSystemStock != null; else dashSys">
+                  <span class="fw-bold text-white fs-4">{{ diagSystemStock }}</span>
+                </ng-container>
+                <ng-template #dashSys>
+                  <div style="width: 16px; height: 3px; background-color: #ffffff; border-radius: 1px;"></div>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="text-center p-4 py-4 h-100 d-flex flex-column justify-content-center" style="background-color: #1c212e; border-radius: 8px; border: 1px solid #232938;">
+              <div class="mb-3 fw-bold" style="color: #6377a3; font-family: monospace; font-size: 0.8rem; letter-spacing: 1.5px;">TOTAL TROUVÉ</div>
+              <div class="d-flex align-items-center justify-content-center" style="height: 30px;">
+                <ng-container *ngIf="diagDepotCount != null || diagEtagereCount != null; else dashTot">
+                  <span class="fw-bold text-white fs-4">{{ (diagDepotCount || 0) + (diagEtagereCount || 0) }}</span>
+                </ng-container>
+                <ng-template #dashTot>
+                  <div style="width: 16px; height: 3px; background-color: #ffffff; border-radius: 1px;"></div>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="text-center p-4 py-4 h-100 d-flex flex-column justify-content-center" style="background-color: #1c212e; border-radius: 8px; border: 1px solid #232938;">
+              <div class="mb-3 fw-bold" style="color: #6377a3; font-family: monospace; font-size: 0.8rem; letter-spacing: 1.5px;">ÉCART</div>
+              <div class="d-flex align-items-center justify-content-center" style="height: 30px;">
+                <ng-container *ngIf="getEcart() != null; else dashEcart">
+                  <span class="fw-bold fs-4" [ngClass]="getEcart()! < 0 ? 'text-danger' : (getEcart()! > 0 ? 'text-success' : 'text-white')">
+                    {{ getEcart()! > 0 ? '+' + getEcart() : getEcart() }}
+                  </span>
+                </ng-container>
+                <ng-template #dashEcart>
+                  <div style="width: 16px; height: 3px; background-color: #ffffff; border-radius: 1px;"></div>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTION BUTTON (Subtle, outside the visual boxes but inside wrapper) -->
+    <div class="text-end mt-3" *ngIf="diagSystemStock != null && diagDepotCount != null && diagEtagereCount != null && diagSelectedProductId">
+      <button class="btn btn-sm px-4 py-2 rounded-2 fw-bold text-white" style="background-color: #2b56f5; border: none; letter-spacing: 1px;" (click)="calculerEtAlerter()">
+        Valider et Générer Alerte
+      </button>
+    </div>
+  </div>
 
   <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
     <div class="d-flex align-items-center bg-white shadow-sm rounded-pill px-4 py-3">
       <div class="position-relative me-3">
         <i class="bi bi-exclamation-triangle-fill text-warning fs-4"></i>
-        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" *ngIf="alerts.length > 0"></span>
+        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" *ngIf="filteredAlerts.length > 0"></span>
       </div>
-      <div class="fw-bold text-dark fs-5">Alertes Actives</div>
-      <div class="badge bg-danger ms-3 px-3 py-2 rounded-pill shadow-sm">{{ alerts.length }}</div>
+      <div class="fw-bold text-dark fs-5">Toutes les Alertes</div>
+      <div class="badge bg-danger ms-3 px-3 py-2 rounded-pill shadow-sm">{{ filteredAlerts.length }}</div>
     </div>
     
     <div class="d-flex bg-glass shadow-sm rounded-pill p-2">
-      <select class="form-select border-0 bg-transparent shadow-none fw-bold text-secondary me-2 cursor-pointer">
-        <option>Toutes les sévérités</option>
-        <option>Critiques & Urgences</option>
-        <option>Informatives</option>
+      <select class="form-select border-0 bg-transparent shadow-none fw-bold text-secondary me-2 cursor-pointer" [(ngModel)]="filterSeverity">
+        <option value="all">Toutes les sévérités</option>
+        <option value="critical">Critiques & Urgences</option>
+        <option value="info">Informatives</option>
       </select>
       <div class="border-end mx-2"></div>
-      <select class="form-select border-0 bg-transparent shadow-none fw-bold text-secondary cursor-pointer">
-        <option>Aujourd'hui</option>
-        <option>7 Derniers jours</option>
+      <select class="form-select border-0 bg-transparent shadow-none fw-bold text-secondary cursor-pointer" [(ngModel)]="filterDate">
+        <option value="today">Aujourd'hui</option>
+        <option value="7days">7 Derniers jours</option>
       </select>
     </div>
   </div>
@@ -33,7 +147,7 @@
         
         <!-- Loop over dynamic alerts -->
         <div class="alert-card card bg-glass shadow-sm border-0 rounded-4 mb-3" 
-             *ngFor="let al of alerts" 
+             *ngFor="let al of filteredAlerts" 
              [ngClass]="al.critical ? 'border-danger critical-alert-border' : 'border-primary'">
              
           <div class="card-body p-4 d-flex flex-column flex-sm-row align-items-start align-items-sm-center">
@@ -103,7 +217,7 @@
         </div>
 
         <!-- Empty State -->
-        <div *ngIf="alerts.length === 0" class="card bg-glass shadow-none border-0 rounded-4 p-5 text-center empty-state-card">
+        <div *ngIf="filteredAlerts.length === 0" class="card bg-glass shadow-none border-0 rounded-4 p-5 text-center empty-state-card">
           <div class="card-body py-5">
             <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle mb-4" style="width: 100px; height: 100px;">
               <i class="bi bi-shield-check" style="font-size: 3rem;"></i>

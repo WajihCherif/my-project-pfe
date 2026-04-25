@@ -21,4 +21,8 @@ export class AlertService {
   getById(id: number): Observable<Alert> {
     return this.http.get<Alert>(`${this.apiUrl}/${id}`).pipe(catchError(this.handleError));
   }
+
+  createAlert(alertData: any): Observable<Alert> {
+    return this.http.post<Alert>(`${this.apiUrl}/manual`, alertData).pipe(catchError(this.handleError));
+  }
 }
